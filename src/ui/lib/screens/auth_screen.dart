@@ -75,15 +75,16 @@ class _AuthScreenState extends State<AuthScreen>
                       const TitleField(),
                       const SizedBox(height: 56),
                       AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 350),
                         curve: Curves.easeInOut,
                         child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 450),
+                          duration: const Duration(milliseconds: 600),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
                           layoutBuilder:
                               (Widget? currentChild, List<Widget> previous) {
                             return Stack(
+                              clipBehavior: Clip.none,
                               alignment: Alignment.center,
                               children: [
                                 ...previous,
@@ -91,44 +92,41 @@ class _AuthScreenState extends State<AuthScreen>
                               ],
                             );
                           },
-<<<<<<< ours
-=======
-                          clipBehavior: Clip.none,
->>>>>>> theirs
                           transitionBuilder: (child, animation) {
                             final bool isRegisterChild =
                                 child.key == const ValueKey('register');
                             final bool isEntering =
                                 animation.status != AnimationStatus.reverse;
 
-                            final Offset startOffset;
-                            final Offset endOffset;
-                            if (isEntering) {
-                              startOffset = isRegisterChild
-                                  ? const Offset(1, 0)
-                                  : const Offset(-1, 0);
-                              endOffset = Offset.zero;
-                            } else {
-                              startOffset = Offset.zero;
-                              endOffset = isRegisterChild
-                                  ? const Offset(1, 0)
-                                  : const Offset(-1, 0);
-                            }
+                            final double direction =
+                                isRegisterChild ? 1.0 : -1.0;
+                            final double offScreenDistance =
+                                MediaQuery.of(context).size.width;
 
-                            final offsetAnimation = animation.drive(
-                              Tween<Offset>(
-                                begin: startOffset,
-                                end: endOffset,
+                            final Animation<double> offsetAnimation =
+                                animation.drive(
+                              Tween<double>(
+                                begin: isEntering
+                                    ? direction * offScreenDistance
+                                    : 0.0,
+                                end: isEntering
+                                    ? 0.0
+                                    : direction * offScreenDistance,
                               ).chain(
-                                CurveTween(
-                                  curve: Curves.easeInOutCubic,
-                                ),
+                                CurveTween(curve: Curves.easeInOutCubic),
                               ),
                             );
 
-                            return SlideTransition(
-                              position: offsetAnimation,
+                            return AnimatedBuilder(
+                              animation: offsetAnimation,
                               child: child,
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset:
+                                      Offset(offsetAnimation.value, 0),
+                                  child: child,
+                                );
+                              },
                             );
                           },
                           child: _isRegister

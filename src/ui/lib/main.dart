@@ -1,42 +1,69 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
+import 'screens/auth_screen.dart';
+import 'screens/load_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const WasteManagementApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class WasteManagementApp extends StatelessWidget {
+  const WasteManagementApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
-      child: MaterialApp(
-        title: 'Namer App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+    return MaterialApp(
+      title: 'GreenRoute',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'Roboto',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF13A05D),
+          primary: const Color(0xFF13A05D),
+          secondary: const Color(0xFF0A7443),
+          brightness: Brightness.light,
         ),
-        home: MyHomePage(),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF13A05D), width: 1.5),
+          ),
+        ),
       ),
+      home: const EntryShell(),
     );
   }
 }
 
-class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
+class EntryShell extends StatefulWidget {
+  const EntryShell({super.key});
+
+  @override
+  State<EntryShell> createState() => _EntryShellState();
 }
 
-class MyHomePage extends StatelessWidget {
+class _EntryShellState extends State<EntryShell> {
+  bool _isLoading = true;
+
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    if (_isLoading) {
+      return LoadScreen(
+        onFinished: () {
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+        },
+      );
+    }
 
-    return Scaffold(
-      body: Column(
-        children: [Text('A random idea:'), Text(appState.current.asLowerCase)],
-      ),
-    );
+    return const AuthScreen();
   }
 }
