@@ -1,0 +1,98 @@
+\section{Cơ sở lý thuyết}
+
+\subsection{RTP - Real time transfer protocol}
+RTP (Real-time Transfer Protocol) là giao thức truyền tải được thiết kế để vận chuyển dữ liệu thời gian thực như video, audio hoặc hình ảnh qua mạng IP. RTP thường hoạt động trên nền tảng UDP để giảm độ trễ và cho phép truyền tải liên tục, mặc dù đặc tính này có thể dẫn đến mất gói (packet loss). \cite{rtp1}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/RTP.png}
+    \caption{Cấu trúc giao thức RTP \cite{rtp2}}
+    \label{fig:placeholder}
+\end{figure}
+Gói RTP bao gồm hai phần: 
+\begin{itemize}
+    \item Header: chứa các thông tin điều khiển quan trọng như:
+    \begin{itemize}
+        \item Version: phiên bản của giao thức RTP.
+        \item Padding: chỉ định xem có thêm byte đệm vào cuối gói hay không.
+        \item Extension: chỉ định xem có phần mở rộng header hay không.
+        \item Contributing Source Count: số lượng nguồn đồng thời tham gia vào stream.
+        \item Marker Bit: đánh dấu các sự kiện quan trọng trong luồng dữ liệu.
+        \item Payload Type: xác định loại dữ liệu được truyền.
+        \item Sequence Number: xác định thứ tự gói tin, hỗ trợ phát hiện mất gói.
+        \item Timestamp: đánh dấu thời gian của gói tin, hỗ trợ đồng bộ hóa.
+        \item Synchronization Source Identifier: định danh nguồn stream.
+        \item Contributing Source Identifiers: định danh các nguồn đóng góp vào stream.
+    \end{itemize}
+    \item Payload: chứa dữ liệu thực tế của video.
+\end{itemize}
+
+\textbf{Lưu ý:} Một số giá trị đã được quy định sẵn trong giới hạn bài lab
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|p{8cm}|c|c|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Ký hiệu}} & \multicolumn{1}{c|}{\textbf{Field}} & \multicolumn{1}{c|}{\textbf{Số bit}} & \multicolumn{1}{c|}{\textbf{Giá trị}} \\ \hline
+V & Version & 2 & 2  \\ \hline
+P & Padding & 1 & 0  \\ \hline
+X & Extension & 1 & 0  \\ \hline
+CC & Contributing Source Count & 4 & 0  \\ \hline
+M & Marker Bit & 1 & 0  \\ \hline
+PT & Payload Type & 7 & 26  \\ \hline
+ & Sequence Number & 16 & frameNbr  \\ \hline
+ & Timestamp & 32 & time()  \\ \hline
+SSRC & Synchronization Source Identifier & 32 & Số tùy ý \\ \hline
+CSRC & Contributing Source Identifier & 0 & Không có  \\ \hline
+ & \textbf{Tổng số bits} & \textbf{96 (12 bytes)} &  \\ \hline
+\end{tabular}
+\caption{Giá trị có sẵn của bài lab trong RTP header}
+\end{table}
+
+\subsection{RTSP - Real time streaming protocol}
+RTSP (Real-time Streaming Protocol) là giao thức điều khiển cho các phiên truyền tải media. Khác với RTP, RTSP không vận chuyển dữ liệu video mà cung cấp cơ chế "điều khiển từ xa" các hành động như PLAY, PAUSE hay TEARDOWN. RTSP hoạt động trên TCP để đảm bảo tính chính xác của thông điệp điều khiển. \cite{rtsp1} \\
+Một phiên RTSP tiêu chuẩn gồm các trạng thái và lệnh sau:
+\begin{itemize}
+    \item \textbf{SETUP}: yêu cầu server tạo phiên làm việc RTSP và thiết lập port để truyền RTP.
+    \item \textbf{PLAY}: yêu cầu server bắt đầu gửi các packet RTP tới client.
+    \item \textbf{PAUSE}: tạm dừng việc gửi dữ liệu nhưng giữ phiên RTSP.
+    \item \textbf{TEARDOWN}: yêu cầu server kết thúc phiên RTSP và giải phóng tài nguyên.
+\end{itemize}
+Client và server giao tiếp bằng mô hình request–response, trong đó mỗi yêu cầu đều kèm theo CSeq (Command Sequence) để đánh số thứ tự và Session ID để xác định phiên làm việc.
+
+\subsection{MJPEG - Motion JPEG}
+MJPEG (Motion JPEG) là định dạng video được tạo ra bằng cách nối liên tiếp nhiều ảnh JPEG độc lập theo thời gian để tạo thành chuỗi chuyển động. \cite{mjpeg1} \\
+Mỗi frame được lưu dưới dạng ảnh JPEG đầy đủ với 1 trong các cấu trúc sau:
+\begin{enumerate}
+    \item Trước mỗi frame có một 5-byte prefix mô tả độ dài frame đơn vị byte (file video có sẵn trong bài lab).
+    \item JPEG frame bắt đầu bằng \texttt{0xFF 0xD8} (SOI) và kết thúc bằng \texttt{0xFF 0xD9} (EOI) (các file video từ nguồn khác).
+\end{enumerate}
+
+\subsection{MTU - Maximum Transmission Unit}
+MTU (Maximum Transmission Unit) là kích thước tối đa của một đơn vị dữ liệu có thể được truyền đi trong một frame hoặc một gói tin trên một phương tiện mạng (network interface) mà không cần bị phân mảnh (fragmentation). \cite{mtu1}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{4cm}|p{5cm}|p{7cm}|}
+\hline
+\textbf{Các phương tiện truyền tải qua IP} & \textbf{MTU (bytes)} & \textbf{Notes} \\ \hline
+Internet IPv4 path MTU & Tối thiểu 68 bytes, tối đa 64 KiB & MTU thực tế phụ thuộc đường truyền; nếu router giảm MTU sẽ xảy ra IP fragmentation. \\ \hline
+Internet IPv6 path MTU & Tối thiểu 1280 bytes, tối đa 64 KiB & Yêu cầu MTU tối thiểu 1280 bytes; hỗ trợ gói jumbo cho payload lớn. \\ \hline
+X.25 & 576 bytes khi gửi hoặc 1600 bytes khi nhận & Chuẩn X.25 quy định hai ngưỡng MTU khác nhau cho chiều gửi và nhận. \\ \hline
+Ethernet v2 & 1500 bytes & Hầu hết mạng LAN sử dụng Ethernet II nên MTU mặc định luôn là 1500 bytes. \\ \hline
+... & ... & ... \\ \hline
+\end{tabular}
+\caption{Một số MTU cho các phương tiện truyền tải phổ biến}
+\end{table}
+
+Ngoài ra, WiFi (802.11) cũng dùng MTU 1500 cho IP payload và mọi router WiFi đều mặc định sử dụng MTU = 1500 để tương thích Internet. \cite{mtu2}
+
+\subsection{UDP - User datagram protocol và TCP - Transmission Control Protocol}
+
+TCP là giao thức truyền vận đáng tin cậy (reliable), hướng kết nối (connection-oriented), đảm bảo dữ liệu được gửi theo đúng thứ tự và không bị mất.
+UDP là giao thức truyền vận không kết nối (connectionless), không đảm bảo độ tin cậy (unreliable), không kiểm soát luồng dữ liệu và không đảm bảo thứ tự gói tin. \cite{udptcp1}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/compare.png}
+    \caption{So sánh TCP và UDP \cite{udptcp2}}
+\end{figure}
