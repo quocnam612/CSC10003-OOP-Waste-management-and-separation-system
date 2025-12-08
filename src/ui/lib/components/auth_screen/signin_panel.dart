@@ -5,6 +5,7 @@ class SigninPanel extends StatelessWidget {
     super.key,
     required this.maxWidth,
     required this.formKey,
+    required this.fullNameController,
     required this.usernameController,
     required this.phoneController,
     required this.passwordController,
@@ -19,6 +20,7 @@ class SigninPanel extends StatelessWidget {
 
   final double maxWidth;
   final GlobalKey<FormState> formKey;
+  final TextEditingController fullNameController;
   final TextEditingController usernameController;
   final TextEditingController phoneController;
   final TextEditingController passwordController;
@@ -65,6 +67,17 @@ class SigninPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
+            TextFormField(
+              controller: fullNameController,
+              decoration: const InputDecoration(
+                labelText: 'Họ và tên',
+                hintText: 'Nhập họ và tên',
+              ),
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Vui lòng nhập họ và tên'
+                  : null,
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: usernameController,
               decoration: const InputDecoration(

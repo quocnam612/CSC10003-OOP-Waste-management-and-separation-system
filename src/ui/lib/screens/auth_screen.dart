@@ -17,6 +17,8 @@ class _AuthScreenState extends State<AuthScreen>
   final _signinFormKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _registerFullNameController =
+      TextEditingController();
   final TextEditingController _registerUsernameController =
       TextEditingController();
   final TextEditingController _registerPhoneController =
@@ -40,6 +42,7 @@ class _AuthScreenState extends State<AuthScreen>
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _registerFullNameController.dispose();
     _registerUsernameController.dispose();
     _registerPhoneController.dispose();
     _registerPasswordController.dispose();
@@ -59,15 +62,14 @@ class _AuthScreenState extends State<AuthScreen>
             'assets/images/bg_pattern.png',
             fit: BoxFit.cover,
           ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double maxWidth =
-                    constraints.maxWidth < 640 ? constraints.maxWidth : 460;
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxWidth =
+                  constraints.maxWidth < 640 ? constraints.maxWidth : 460;
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 80, 24, 24),
+              return Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -134,6 +136,8 @@ class _AuthScreenState extends State<AuthScreen>
                                   key: const ValueKey('register'),
                                   maxWidth: maxWidth,
                                   formKey: _signinFormKey,
+                                  fullNameController:
+                                      _registerFullNameController,
                                   usernameController:
                                       _registerUsernameController,
                                   phoneController: _registerPhoneController,
@@ -183,16 +187,14 @@ class _AuthScreenState extends State<AuthScreen>
                                     }
                                   },
                                 ),
-                        ),
+                        ),  
                       ),
                     ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-        ],
-      ),
     );
   }
 }

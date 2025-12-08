@@ -21,7 +21,7 @@ class _LoadScreenState extends State<LoadScreen>
     super.initState();
     _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
     )..repeat();
 
     // Simulate a loading delay then notify the parent that loading finished.
