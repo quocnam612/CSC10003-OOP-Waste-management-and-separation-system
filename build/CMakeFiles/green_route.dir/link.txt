@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/green_route.dir/link.d CMakeFiles/green_route.dir/src/main.cpp.o -o "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route"  -Wl,-rpath,/usr/local/lib /usr/local/lib/libbsoncxx.so /usr/local/lib/libmongocxx.so

@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build",
+  "command": "/usr/bin/c++  -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -std=gnu++17 -o CMakeFiles/green_route.dir/src/main.cpp.o -c \"/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/main.cpp\"",
+  "file": "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/main.cpp",
+  "output": "CMakeFiles/green_route.dir/src/main.cpp.o"
+}
+]
