@@ -53,10 +53,6 @@ class _LoadScreenState extends State<LoadScreen>
                 'assets/icons/loading.svg',
                 width: 48,
                 height: 48,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
               ),
             ),
           ),

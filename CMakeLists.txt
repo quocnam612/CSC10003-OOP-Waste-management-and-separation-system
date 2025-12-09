@@ -12,6 +12,7 @@ list(APPEND CMAKE_PREFIX_PATH
 # Try to use the CMake config files if available, otherwise fall back to manual linking.
 find_package(bsoncxx CONFIG)
 find_package(mongocxx CONFIG)
+find_package(OpenSSL REQUIRED)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
@@ -25,6 +26,7 @@ if(TARGET bsoncxx::bsoncxx AND TARGET mongocxx::mongocxx)
     target_link_libraries(green_route PRIVATE
         bsoncxx::bsoncxx
         mongocxx::mongocxx
+        OpenSSL::Crypto
     )
 else()
     message(WARNING "Using manual include/library paths for bsoncxx/mongocxx.")
@@ -35,5 +37,6 @@ else()
     target_link_libraries(green_route PRIVATE
         /usr/local/lib/libbsoncxx.so
         /usr/local/lib/libmongocxx.so
+        OpenSSL::Crypto
     )
 endif()

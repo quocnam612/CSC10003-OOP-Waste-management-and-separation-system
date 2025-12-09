@@ -72,10 +72,66 @@ include CMakeFiles/green_route.dir/flags.make
 CMakeFiles/green_route.dir/codegen:
 .PHONY : CMakeFiles/green_route.dir/codegen
 
+CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o: CMakeFiles/green_route.dir/flags.make
+CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o: /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/auth_service.cpp
+CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o: CMakeFiles/green_route.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o -MF CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o.d -o CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o -c "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/auth_service.cpp"
+
+CMakeFiles/green_route.dir/src/bus/auth_service.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/green_route.dir/src/bus/auth_service.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/auth_service.cpp" > CMakeFiles/green_route.dir/src/bus/auth_service.cpp.i
+
+CMakeFiles/green_route.dir/src/bus/auth_service.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/green_route.dir/src/bus/auth_service.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/auth_service.cpp" -o CMakeFiles/green_route.dir/src/bus/auth_service.cpp.s
+
+CMakeFiles/green_route.dir/src/bus/ultis.cpp.o: CMakeFiles/green_route.dir/flags.make
+CMakeFiles/green_route.dir/src/bus/ultis.cpp.o: /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/ultis.cpp
+CMakeFiles/green_route.dir/src/bus/ultis.cpp.o: CMakeFiles/green_route.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/green_route.dir/src/bus/ultis.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/green_route.dir/src/bus/ultis.cpp.o -MF CMakeFiles/green_route.dir/src/bus/ultis.cpp.o.d -o CMakeFiles/green_route.dir/src/bus/ultis.cpp.o -c "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/ultis.cpp"
+
+CMakeFiles/green_route.dir/src/bus/ultis.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/green_route.dir/src/bus/ultis.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/ultis.cpp" > CMakeFiles/green_route.dir/src/bus/ultis.cpp.i
+
+CMakeFiles/green_route.dir/src/bus/ultis.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/green_route.dir/src/bus/ultis.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/ultis.cpp" -o CMakeFiles/green_route.dir/src/bus/ultis.cpp.s
+
+CMakeFiles/green_route.dir/src/db/connect.cpp.o: CMakeFiles/green_route.dir/flags.make
+CMakeFiles/green_route.dir/src/db/connect.cpp.o: /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/db/connect.cpp
+CMakeFiles/green_route.dir/src/db/connect.cpp.o: CMakeFiles/green_route.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/green_route.dir/src/db/connect.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/green_route.dir/src/db/connect.cpp.o -MF CMakeFiles/green_route.dir/src/db/connect.cpp.o.d -o CMakeFiles/green_route.dir/src/db/connect.cpp.o -c "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/db/connect.cpp"
+
+CMakeFiles/green_route.dir/src/db/connect.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/green_route.dir/src/db/connect.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/db/connect.cpp" > CMakeFiles/green_route.dir/src/db/connect.cpp.i
+
+CMakeFiles/green_route.dir/src/db/connect.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/green_route.dir/src/db/connect.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/db/connect.cpp" -o CMakeFiles/green_route.dir/src/db/connect.cpp.s
+
+CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o: CMakeFiles/green_route.dir/flags.make
+CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o: /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/dto/UserDto.cpp
+CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o: CMakeFiles/green_route.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o -MF CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o.d -o CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o -c "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/dto/UserDto.cpp"
+
+CMakeFiles/green_route.dir/src/dto/UserDto.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/green_route.dir/src/dto/UserDto.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/dto/UserDto.cpp" > CMakeFiles/green_route.dir/src/dto/UserDto.cpp.i
+
+CMakeFiles/green_route.dir/src/dto/UserDto.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/green_route.dir/src/dto/UserDto.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/dto/UserDto.cpp" -o CMakeFiles/green_route.dir/src/dto/UserDto.cpp.s
+
 CMakeFiles/green_route.dir/src/main.cpp.o: CMakeFiles/green_route.dir/flags.make
 CMakeFiles/green_route.dir/src/main.cpp.o: /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/main.cpp
 CMakeFiles/green_route.dir/src/main.cpp.o: CMakeFiles/green_route.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/green_route.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/green_route.dir/src/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/green_route.dir/src/main.cpp.o -MF CMakeFiles/green_route.dir/src/main.cpp.o.d -o CMakeFiles/green_route.dir/src/main.cpp.o -c "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/main.cpp"
 
 CMakeFiles/green_route.dir/src/main.cpp.i: cmake_force
@@ -88,18 +144,27 @@ CMakeFiles/green_route.dir/src/main.cpp.s: cmake_force
 
 # Object files for target green_route
 green_route_OBJECTS = \
+"CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o" \
+"CMakeFiles/green_route.dir/src/bus/ultis.cpp.o" \
+"CMakeFiles/green_route.dir/src/db/connect.cpp.o" \
+"CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o" \
 "CMakeFiles/green_route.dir/src/main.cpp.o"
 
 # External object files for target green_route
 green_route_EXTERNAL_OBJECTS =
 
+/run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o
+/run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/src/bus/ultis.cpp.o
+/run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/src/db/connect.cpp.o
+/run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o
 /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/src/main.cpp.o
 /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/build.make
 /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/compiler_depend.ts
 /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: /usr/local/lib/libbsoncxx.so
 /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: /usr/local/lib/libmongocxx.so
+/run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: /usr/lib/libcrypto.so
 /run/media/nqn612/F/4-MY\ PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route: CMakeFiles/green_route.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable \"/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route\""
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable \"/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route\""
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/green_route.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
