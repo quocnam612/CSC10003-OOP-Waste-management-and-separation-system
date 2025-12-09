@@ -1,30 +1,39 @@
 # CSC10003-OOP-Waste-management-and-separation-system
 
-## MongoDB configuration
+## Requirement
 
-Both `src/main.cpp` and the quickstart sample expect the connection string in the `MONGODB_URI`
-environment variable. This lets you point the application at a local MongoDB instance or a hosted
-deployment (for example MongoDB Atlas) without touching the source code.
+* C++23
+* Mongodb ([C++ driver](https://www.mongodb.com/docs/languages/cpp/cpp-driver/current/get-started/#std-label-cpp-get-started))
+* [Flutter](https://docs.flutter.dev/install/with-vs-code)
+* CMake
 
-```
-export MONGODB_URI="mongodb+srv://<user>:<password>@<cluster-url>/?retryWrites=true&w=majority"
-```
+## Run & Build Backend
 
-Atlas and other managed deployments require TLS. If your system CA bundle does not include the CA
-that signed your cluster’s certificate, pass the PEM file via `MONGODB_TLS_CA_FILE`:
+* Configuration
 
-```
-export MONGODB_TLS_CA_FILE=/path/to/ca-bundle.pem
-```
+    ```
+    cmake -S . -B build
+    ```
 
-You can also toggle less secure options if you are working inside a lab environment that uses
-self-signed certificates:
+* Build
 
-```
-export MONGODB_TLS_ALLOW_INVALID_CERTIFICATES=1
-export MONGODB_TLS_ALLOW_INVALID_HOSTNAMES=1
-```
+    ```
+    cmake --build build
+    ```
 
-These toggles should be avoided in production, but they are useful when you only have untrusted
-certificates and are otherwise blocked by `TLS handshake failed` errors, such as the one shown in
-`app.out`.
+* Run
+
+    ```
+    ./out/greenroute
+    ```
+
+## Run & Debug Frontend
+
+You can either go to `src/ui/lib/main.dart` and choose Run/Debug or:
+
+* Run
+
+  ```
+  cd src/ui
+  flutter run
+  ```
