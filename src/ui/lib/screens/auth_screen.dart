@@ -11,32 +11,30 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen>
-    with TickerProviderStateMixin {
+class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   final _loginFormKey = GlobalKey<FormState>();
   final _signinFormKey = GlobalKey<FormState>();
+  
+  // Login controllers
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _registerFullNameController =
-      TextEditingController();
-  final TextEditingController _registerUsernameController =
-      TextEditingController();
-  final TextEditingController _registerPhoneController =
-      TextEditingController();
-  final TextEditingController _registerPasswordController =
-      TextEditingController();
-  final TextEditingController _registerConfirmPasswordController =
-      TextEditingController();
 
+  // Sign up controllers
+  final TextEditingController _registerFullNameController = TextEditingController();
+  final TextEditingController _registerUsernameController = TextEditingController();
+  final TextEditingController _registerPhoneController = TextEditingController();
+  final TextEditingController _registerPasswordController = TextEditingController();
+  final TextEditingController _registerConfirmPasswordController = TextEditingController();
+  
+  bool _isRegister = false;
+  String? _loginSelectedRole;
+  String? _registerSelectedRole;
   final List<String> _roles = const [
     'Người dân',
     'Nhân viên thu gom',
     'Quản lý khu vực',
   ];
 
-  String? _loginSelectedRole;
-  String? _registerSelectedRole;
-  bool _isRegister = false;
 
   @override
   void dispose() {

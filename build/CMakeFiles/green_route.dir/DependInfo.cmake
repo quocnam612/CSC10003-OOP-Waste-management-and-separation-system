@@ -8,6 +8,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/auth_service.cpp" "CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o" "gcc" "CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o.d"
+  "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/bus/ultis.cpp" "CMakeFiles/green_route.dir/src/bus/ultis.cpp.o" "gcc" "CMakeFiles/green_route.dir/src/bus/ultis.cpp.o.d"
+  "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/db/connect.cpp" "CMakeFiles/green_route.dir/src/db/connect.cpp.o" "gcc" "CMakeFiles/green_route.dir/src/db/connect.cpp.o.d"
+  "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/dto/UserDto.cpp" "CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o" "gcc" "CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o.d"
   "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/src/main.cpp" "CMakeFiles/green_route.dir/src/main.cpp.o" "gcc" "CMakeFiles/green_route.dir/src/main.cpp.o.d"
   "" "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/out/green_route" "gcc" "CMakeFiles/green_route.dir/link.d"
   )

@@ -10,6 +10,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/CMakeLists.txt"
   "CMakeFiles/4.2.0/CMakeCXXCompiler.cmake"
   "CMakeFiles/4.2.0/CMakeSystem.cmake"
+  "CMakeFiles/VerifyGlobs.cmake"
+  "CMakeFiles/cmake.verify_globs"
   "/usr/local/lib/cmake/bson-2.1.2/00-mongo-platform-targets.cmake"
   "/usr/local/lib/cmake/bson-2.1.2/bsonConfig.cmake"
   "/usr/local/lib/cmake/bson-2.1.2/bsonConfigVersion.cmake"

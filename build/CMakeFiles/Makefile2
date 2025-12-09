@@ -85,12 +85,12 @@ clean: CMakeFiles/green_route.dir/clean
 CMakeFiles/green_route.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=1,2 "Built target green_route"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=1,2,3,4,5,6 "Built target green_route"
 .PHONY : CMakeFiles/green_route.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/green_route.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" 2
+	$(CMAKE_COMMAND) -E cmake_progress_start "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/green_route.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" 0
 .PHONY : CMakeFiles/green_route.dir/rule
@@ -102,7 +102,7 @@ green_route: CMakeFiles/green_route.dir/rule
 # codegen rule for target.
 CMakeFiles/green_route.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=1,2 "Finished codegen for target green_route"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles" --progress-num=1,2,3,4,5,6 "Finished codegen for target green_route"
 .PHONY : CMakeFiles/green_route.dir/codegen
 
 # clean rule for target.
@@ -117,6 +117,7 @@ CMakeFiles/green_route.dir/clean:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
+	$(CMAKE_COMMAND) -P "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles/VerifyGlobs.cmake"
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

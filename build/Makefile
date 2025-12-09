@@ -113,6 +113,7 @@ preinstall/fast:
 
 # clear depends
 depend:
+	$(CMAKE_COMMAND) -P "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles/VerifyGlobs.cmake"
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
@@ -128,6 +129,102 @@ green_route: cmake_check_build_system
 green_route/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/build
 .PHONY : green_route/fast
+
+src/bus/auth_service.o: src/bus/auth_service.cpp.o
+.PHONY : src/bus/auth_service.o
+
+# target to build an object file
+src/bus/auth_service.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/bus/auth_service.cpp.o
+.PHONY : src/bus/auth_service.cpp.o
+
+src/bus/auth_service.i: src/bus/auth_service.cpp.i
+.PHONY : src/bus/auth_service.i
+
+# target to preprocess a source file
+src/bus/auth_service.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/bus/auth_service.cpp.i
+.PHONY : src/bus/auth_service.cpp.i
+
+src/bus/auth_service.s: src/bus/auth_service.cpp.s
+.PHONY : src/bus/auth_service.s
+
+# target to generate assembly for a file
+src/bus/auth_service.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/bus/auth_service.cpp.s
+.PHONY : src/bus/auth_service.cpp.s
+
+src/bus/ultis.o: src/bus/ultis.cpp.o
+.PHONY : src/bus/ultis.o
+
+# target to build an object file
+src/bus/ultis.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/bus/ultis.cpp.o
+.PHONY : src/bus/ultis.cpp.o
+
+src/bus/ultis.i: src/bus/ultis.cpp.i
+.PHONY : src/bus/ultis.i
+
+# target to preprocess a source file
+src/bus/ultis.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/bus/ultis.cpp.i
+.PHONY : src/bus/ultis.cpp.i
+
+src/bus/ultis.s: src/bus/ultis.cpp.s
+.PHONY : src/bus/ultis.s
+
+# target to generate assembly for a file
+src/bus/ultis.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/bus/ultis.cpp.s
+.PHONY : src/bus/ultis.cpp.s
+
+src/db/connect.o: src/db/connect.cpp.o
+.PHONY : src/db/connect.o
+
+# target to build an object file
+src/db/connect.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/db/connect.cpp.o
+.PHONY : src/db/connect.cpp.o
+
+src/db/connect.i: src/db/connect.cpp.i
+.PHONY : src/db/connect.i
+
+# target to preprocess a source file
+src/db/connect.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/db/connect.cpp.i
+.PHONY : src/db/connect.cpp.i
+
+src/db/connect.s: src/db/connect.cpp.s
+.PHONY : src/db/connect.s
+
+# target to generate assembly for a file
+src/db/connect.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/db/connect.cpp.s
+.PHONY : src/db/connect.cpp.s
+
+src/dto/UserDto.o: src/dto/UserDto.cpp.o
+.PHONY : src/dto/UserDto.o
+
+# target to build an object file
+src/dto/UserDto.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/dto/UserDto.cpp.o
+.PHONY : src/dto/UserDto.cpp.o
+
+src/dto/UserDto.i: src/dto/UserDto.cpp.i
+.PHONY : src/dto/UserDto.i
+
+# target to preprocess a source file
+src/dto/UserDto.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/dto/UserDto.cpp.i
+.PHONY : src/dto/UserDto.cpp.i
+
+src/dto/UserDto.s: src/dto/UserDto.cpp.s
+.PHONY : src/dto/UserDto.s
+
+# target to generate assembly for a file
+src/dto/UserDto.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/green_route.dir/build.make CMakeFiles/green_route.dir/src/dto/UserDto.cpp.s
+.PHONY : src/dto/UserDto.cpp.s
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -162,6 +259,18 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... green_route"
+	@echo "... src/bus/auth_service.o"
+	@echo "... src/bus/auth_service.i"
+	@echo "... src/bus/auth_service.s"
+	@echo "... src/bus/ultis.o"
+	@echo "... src/bus/ultis.i"
+	@echo "... src/bus/ultis.s"
+	@echo "... src/db/connect.o"
+	@echo "... src/db/connect.i"
+	@echo "... src/db/connect.s"
+	@echo "... src/dto/UserDto.o"
+	@echo "... src/dto/UserDto.i"
+	@echo "... src/dto/UserDto.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
@@ -176,6 +285,7 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
+	$(CMAKE_COMMAND) -P "/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles/VerifyGlobs.cmake"
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
