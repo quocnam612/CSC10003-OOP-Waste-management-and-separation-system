@@ -1,3 +1,0 @@
-/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles/green_route.dir
-/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles/edit_cache.dir
-/run/media/nqn612/F/4-MY PROJECTS/Github/CSC10003-OOP-Waste-management-and-separation-system/build/CMakeFiles/rebuild_cache.dir
