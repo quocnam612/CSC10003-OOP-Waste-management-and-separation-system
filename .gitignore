@@ -1,4 +1,23 @@
+# Build folders
+build/
+out/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+
+# VSCode configs
 .vscode/
+
+# Temporary
+*.o
+*.a
+*.so
+*.dll
+*.exe
 
 # Prerequisites
 *.d
