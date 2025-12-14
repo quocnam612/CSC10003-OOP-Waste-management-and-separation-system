@@ -3,29 +3,29 @@
 ## Requirement
 
 * C++23
-* Mongodb ([C++ driver](https://www.mongodb.com/docs/languages/cpp/cpp-driver/current/get-started/#std-label-cpp-get-started))
-* [Flutter](https://docs.flutter.dev/install/with-vs-code)
+* Docker
 * CMake
+* Flutter
 
-## Run & Build Backend
+## Run & Build API Server
 
-* Configuration
+The server will be at  `http://localhost:5000/`
 
-    ```
-    cmake -S . -B build
-    ```
+* Docker: just run it
 
-* Build
+  ```
+  docker run --rm -p 5000:5000 green_route
+  ```
+* Cmake: need to install these requirement goodluck (mongocxx, OPENSSL, asio)
 
-    ```
-    cmake --build build
-    ```
-
+  ```
+  cmake --build build
+  ```
 * Run
 
-    ```
-    ./out/greenroute
-    ```
+  ```
+  ./out/greenroute
+  ```
 
 ## Run & Debug Frontend
 
