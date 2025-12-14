@@ -1,0 +1,6 @@
+ui/
+build/
+.vscode/
+.git/
+.gitignore
+README.md

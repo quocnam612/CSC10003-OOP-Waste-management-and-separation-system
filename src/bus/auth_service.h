@@ -4,7 +4,11 @@
 #include <bsoncxx/json.hpp>
 #include "../db/connect.h"
 
-using std::expected, std::unexpected, std::string;
+using std::string;
+using std::expected, std::unexpected;
 
-expected<bool, string> registerUser(short role, string username, string password, string phone, string name, int region);
-expected<bsoncxx::document::value, string> loginUser(string username, string password);
+class AuthService {
+public:
+    static expected<bool,string> registerUser(short role, string username, string password, string phone, string name, int region);
+    static expected<bsoncxx::document::value,string> loginUser(string username, string password);
+};

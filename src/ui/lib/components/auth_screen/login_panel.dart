@@ -63,7 +63,7 @@ class LoginPanel extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               DropdownButtonFormField<String>(
-                value: selectedRole,
+                initialValue: selectedRole,
                 borderRadius: BorderRadius.circular(16),
                 hint: const Text('Chọn vai trò'),
                 decoration: const InputDecoration(

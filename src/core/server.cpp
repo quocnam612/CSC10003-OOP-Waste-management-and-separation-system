@@ -7,6 +7,6 @@ void start_server() {
 
     Router::init(app);
 
-    std::cout << "Server is running on http://localhost:5000\n";
-    app.port(5000).multithreaded().run();
+    std::cout << "Server is running on http://0.0.0.0:5000\n";
+    app.bindaddr("0.0.0.0").port(5000).multithreaded().run();
 }

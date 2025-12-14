@@ -1,14 +1,14 @@
 #include <expected>
 #include "auth_service.h"
 #include "../bus/ultis.h"
+#include "../db/user_repo.h"
 
-expected<bool, string> registerUser(short role, string username, string password, string phone, string name, int region) {
+expected<bool, string> AuthService::registerUser(short role, string username, string password, string phone, string name, int region) {
     using bsoncxx::builder::stream::document;
     using bsoncxx::builder::stream::finalize;
 
     // 1. Check if username exists
-    auto existing = usersCol.find_one(document{} << "username" << username << finalize);
-    if (existing) {
+    if (UserRepository::usernameExists(username)) {
         std::cout << "Username already exists\n";
         return unexpected("Username already exists");
     }
@@ -52,17 +52,17 @@ expected<bool, string> registerUser(short role, string username, string password
 
 
     // 5. Insert into DB
-    auto result = usersCol.insert_one(doc.view());
+    auto result = UserRepository::insertUser(doc.view());
 
-    return result ? true : false;
+    return result;
 }
 
-expected<bsoncxx::document::value, string> loginUser(string username, string password) {
+expected<bsoncxx::document::value, string> AuthService::loginUser(string username, string password) {
     using bsoncxx::builder::stream::document;
     using bsoncxx::builder::stream::finalize;
 
     // 1. Find user
-    auto userDoc = usersCol.find_one(document{} << "username" << username << finalize);
+    auto userDoc = UserRepository::findByUsername(username);
 
     if (!userDoc) {
         std::cout << "User not found\n";
