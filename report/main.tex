@@ -19,12 +19,12 @@
 % \renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
 
 % Define course name, report name and report title.
-\newcommand{\coursename}{Phương pháp lập trình hướng đối tượng}
-\newcommand{\reportname}{Hệ thống xử lý và phân loại rác}
-\newcommand{\reporttitle}{Project proposal + Proof of concept}
+\newcommand{\coursename}{Mạng máy tính}
+\newcommand{\reportname}{Video Streaming with RTSP and RTP}
+\newcommand{\reporttitle}{Project Socket Programming}
 
-\newcommand{\studentname}{Nguyễn Quốc Nam - 24120098 \\ Võ Hoàng Phúc – 24120123 \\ Nguyễn Quốc Bảo – 24120265 \\ Nguyễn Trung Chính – 24120271}
-\newcommand{\teachername}{ThS. Trần Duy Quang}
+\newcommand{\studentname}{Nguyễn Quốc Nam - 24120098 \\ Võ Hoàng Phúc - 24120123 \\ Chế Nguyễn Thùy Trang - 24120469}
+\newcommand{\teachername}{ThS. Chung Thuỳ Linh}
 
 % Header
 \lhead{\reporttitle}
@@ -33,6 +33,9 @@ Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
 \coursename
 }
 
+% Footer
+% Customize the footer text if desired. Leaving it empty hides the footer.
+\newcommand{\leftfooter}{}
 \lfoot{\leftfooter}
 
 % ============ DOCUMENT ============
@@ -41,6 +44,8 @@ Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
 \pagenumbering{roman}
 \input{content/title.tex}
 
+\input{content/member.tex}
+\pagebreak
 \tableofcontents
 \pagebreak
 \listoftables
@@ -50,6 +55,11 @@ Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
 
 \pagenumbering{arabic}
 \setcounter{page}{1}
+
+\input{content/I-GioiThieu}
+\input{content/II-CoSoLyThuyet}
+\input{content/III-PhuongPhapThucHien}
+\input{content/IV-KetLuan}
 
 % References
 \input{ref/ref.tex}
