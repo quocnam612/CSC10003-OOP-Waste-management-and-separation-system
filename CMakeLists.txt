@@ -1,42 +1,47 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
+
 project(green_route LANGUAGES CXX)
 
+# ===============================
+# C++23 Setup (Đây là phần quan trọng nhất để sửa lỗi expected)
+# ===============================
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+add_compile_options(-std=c++23)
 
-list(APPEND CMAKE_PREFIX_PATH
-    "/usr/local/lib/cmake/mongocxx"
-    "/usr/local/lib/cmake/bsoncxx"
-)
+# ===============================
+# MongoDB Configuration - TẠM THỜI TẮT (COMMENT OUT)
+# ===============================
+# set(MONGO_INSTALL_PATH "C:/path/to/mongo-cxx-driver") # <-- Dòng gây lỗi
+# list(APPEND CMAKE_PREFIX_PATH ${MONGO_INSTALL_PATH})
 
-# Try to use the CMake config files if available, otherwise fall back to manual linking.
-find_package(bsoncxx CONFIG)
-find_package(mongocxx CONFIG)
-find_package(OpenSSL REQUIRED)
+# find_package(bsoncxx CONFIG REQUIRED)  <-- Tắt dòng này
+# find_package(mongocxx CONFIG REQUIRED) <-- Tắt dòng này
+# find_package(OpenSSL REQUIRED)         <-- Tắt dòng này
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
-
-# Collect backend sources but skip the Flutter UI tree, which has its own build.
+# ===============================
+# Source files & Executable
+# ===============================
 file(GLOB_RECURSE project_sources CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(FILTER project_sources EXCLUDE REGEX "/src/ui/")
+
 add_executable(green_route ${project_sources})
 
-if(TARGET bsoncxx::bsoncxx AND TARGET mongocxx::mongocxx)
-    target_link_libraries(green_route PRIVATE
-        bsoncxx::bsoncxx
-        mongocxx::mongocxx
-        OpenSSL::Crypto
-    )
+# ===============================
+# Link libraries - TẠM THỜI TẮT PHẦN MONGO
+# ===============================
+# target_link_libraries(green_route PRIVATE
+#    mongocxx::mongocxx_shared
+#    bsoncxx::bsoncxx_shared
+#    OpenSSL::Crypto
+# )
+
+# ===============================
+# Warnings
+# ===============================
+if (MSVC)
+    target_compile_options(green_route PRIVATE /W4)
 else()
-    message(WARNING "Using manual include/library paths for bsoncxx/mongocxx.")
-    target_include_directories(green_route PRIVATE
-        /usr/local/include/mongocxx/v_noabi
-        /usr/local/include/bsoncxx/v_noabi
-    )
-    target_link_libraries(green_route PRIVATE
-        /usr/local/lib/libbsoncxx.so
-        /usr/local/lib/libmongocxx.so
-        OpenSSL::Crypto
-    )
+    target_compile_options(green_route PRIVATE -Wall -Wextra -pedantic)
 endif()
