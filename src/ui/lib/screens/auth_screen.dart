@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../components/auth_screen/login_panel.dart';
 import '../components/auth_screen/signin_panel.dart';
 import '../components/auth_screen/title_field.dart';
+import '../services/auth_api.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -29,11 +30,86 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   bool _isRegister = false;
   String? _loginSelectedRole;
   String? _registerSelectedRole;
+  bool _isLoginLoading = false;
+  bool _isRegisterLoading = false;
   final List<String> _roles = const [
     'Người dân',
     'Nhân viên thu gom',
     'Quản lý khu vực',
   ];
+
+  int? _roleToId(String? role) {
+    switch (role) {
+      case 'Người dân':
+        return 1;
+      case 'Nhân viên thu gom':
+        return 2;
+      case 'Quản lý khu vực':
+        return 3;
+      default:
+        return null;
+    }
+  }
+
+  void _showSnack(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError ? Colors.red : null,
+        ),
+      );
+  }
+
+  Future<void> _handleLogin() async {
+    if (_loginFormKey.currentState?.validate() != true) return;
+    setState(() => _isLoginLoading = true);
+    try {
+      final result = await AuthApi.login(
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+      );
+      _showSnack('Đăng nhập thành công: ${result['username'] ?? 'user'}');
+    } catch (e) {
+      _showSnack('Đăng nhập thất bại: ${e.toString()}', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoginLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleRegister() async {
+    if (_signinFormKey.currentState?.validate() != true) return;
+    final roleId = _roleToId(_registerSelectedRole);
+    if (roleId == null) {
+      _showSnack('Vui lòng chọn vai trò hợp lệ', isError: true);
+      return;
+    }
+    setState(() => _isRegisterLoading = true);
+    try {
+      await AuthApi.register(
+        role: roleId,
+        username: _registerUsernameController.text.trim(),
+        password: _registerPasswordController.text,
+        phone: _registerPhoneController.text.trim(),
+        name: _registerFullNameController.text.trim(),
+        region: 0,
+      );
+      _showSnack('Đăng ký thành công! Vui lòng đăng nhập.');
+      if (mounted) {
+        setState(() => _isRegister = false);
+      }
+    } catch (e) {
+      _showSnack('Đăng ký thất bại: ${e.toString()}', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isRegisterLoading = false);
+      }
+    }
+  }
 
 
   @override
@@ -133,10 +209,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         setState(() => _isRegister = false);
                       },
                       onSubmit: () {
-                        if (_signinFormKey.currentState?.validate() == true) {
-                          // TODO: Implement sign up flow.
-                        }
+                        _handleRegister();
                       },
+                      isSubmitting: _isRegisterLoading,
                     )
                         : LoginPanel(
                             key: const ValueKey('login'),
@@ -154,10 +229,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               setState(() => _isRegister = true);
                             },
                             onSubmit: () {
-                              if (_loginFormKey.currentState?.validate() == true) {
-                                // TODO: Implement authentication.
-                              }
+                              _handleLogin();
                             },
+                            isSubmitting: _isLoginLoading,
                           ),
                         ),
                       ),
