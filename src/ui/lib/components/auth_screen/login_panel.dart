@@ -13,6 +13,7 @@ class LoginPanel extends StatelessWidget {
     required this.primaryColor,
     required this.onRegister,
     required this.onSubmit,
+    this.isSubmitting = false,
   });
 
   final double maxWidth;
@@ -25,6 +26,7 @@ class LoginPanel extends StatelessWidget {
   final Color primaryColor;
   final VoidCallback onRegister;
   final VoidCallback onSubmit;
+  final bool isSubmitting;
 
   @override
   Widget build(BuildContext context) {
@@ -138,14 +140,24 @@ class LoginPanel extends StatelessWidget {
                           borderRadius: BorderRadius.circular(50),
                         ),
                       ),
-                      onPressed: onSubmit,
-                      child: const Text(
-                        'Tiếp tục',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      onPressed: isSubmitting ? null : onSubmit,
+                      child: isSubmitting
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'Tiếp tục',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ],
