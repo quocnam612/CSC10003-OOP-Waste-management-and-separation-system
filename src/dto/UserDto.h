@@ -1,7 +1,15 @@
-#pragma once
+#ifndef _USERDTO_H_
+#define _USERDTO_H_
 #include <string>
 #include <map>
 using std::string, std::map;
+
+class RoleEnum {
+public:
+	inline static const int Manager = 1;
+	inline static const int Operator = 2;
+	inline static const int User = 3;
+};
 
 class UserDTO {
 private:
@@ -15,7 +23,7 @@ private:
     string updateAt;
 public:
     UserDTO(short role, const string& name, const string& username, const string& passwordHash, const string& phone);
-    void update();
+    void update() {}
     void deactivate();
 
 
@@ -50,10 +58,9 @@ public:
     double getMultiplier() const;
 };
 
-class OperatorDTO : public UserDTO {
 
-};
 
 class AdminDTO : public UserDTO {
 
 };
+#endif // _USERDTO_H_
