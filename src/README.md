@@ -1,4 +1,4 @@
-## Để chạy chương trình vào thư mục mocktest
+## Để chạy chương trình tìm thư mục mocktest
 ```Bash
 cd .\src\mocktest
 ```
