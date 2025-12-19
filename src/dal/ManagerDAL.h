@@ -1,16 +1,17 @@
-#ifndef PROFILEDAL_H
-#define PROFILEDAL_H
+#ifndef MANAGERDAL_H
+#define MANAGERDAL_H
 
 #include <string>
 #include <optional>
-#include <bsoncxx/v_noabi/bsoncxx/document/value.hpp>
+#include <bsoncxx/document/value.hpp>
 
-class ProfileDAL {
+class ManagerDAL {
 public:
     static bool upsert(const std::string& accountId,
-                       const bsoncxx::document::value& profileDoc);
+                       const bsoncxx::document::value& managerDoc);
 
     static std::optional<bsoncxx::document::value>
     getByAccountId(const std::string& accountId);
 };
+
 #endif

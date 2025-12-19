@@ -1,17 +1,17 @@
-#include "ProfileDAL.h"
+#include "WorkerDAL.h"
 #include "Database.h"
-#include <bsoncxx/v_noabi/bsoncxx/builder/stream/document.hpp>
-#include <mongocxx/v_noabi/mongocxx/options/update.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <mongocxx/options/update.hpp>
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 
-bool ProfileDAL::upsert(const std::string& accountId,
-                        const bsoncxx::document::value& profileDoc) {
-    auto col = Database::instance().getDB()["profiles"];
+bool WorkerDAL::upsert(const std::string& accountId,
+                       const bsoncxx::document::value& workerDoc) {
+    auto col = Database::instance().getDB()["workers"];
 
     auto filter = document{} << "accountId" << accountId << finalize;
-    auto update = document{} << "$set" << profileDoc.view() << finalize;
+    auto update = document{} << "$set" << workerDoc.view() << finalize;
 
     auto result = col.update_one(
         filter.view(),
@@ -23,8 +23,8 @@ bool ProfileDAL::upsert(const std::string& accountId,
 }
 
 std::optional<bsoncxx::document::value>
-ProfileDAL::getByAccountId(const std::string& accountId) {
-    auto col = Database::instance().getDB()["profiles"];
+WorkerDAL::getByAccountId(const std::string& accountId) {
+    auto col = Database::instance().getDB()["workers"];
 
     auto filter = document{} << "accountId" << accountId << finalize;
     auto result = col.find_one(filter.view());

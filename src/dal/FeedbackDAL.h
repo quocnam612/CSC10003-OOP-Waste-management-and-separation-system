@@ -1,17 +1,15 @@
 #ifndef FEEDBACKDAL_H
 #define FEEDBACKDAL_H
-#include "../dto/feedback/FeedbackDTO.h"
-#include <vector>
+
 #include <string>
-using std::vector;
-using std::string;
+#include <vector>
+#include <bsoncxx/v_noabi/bsoncxx/document/value.hpp>
 
 class FeedbackDAL {
-private:
-    const string FILE_PATH = "data/feedbacks.txt";
 public:
-    vector<FeedbackDTO> getAll();
-    void add(FeedbackDTO feedback);
-    void updateStatus(string feedbackId, FeedbackStatus newStatus);
+    static bool insert(const bsoncxx::document::value& doc);
+
+    static std::vector<bsoncxx::document::value>
+    getByAccountId(const std::string& accountId);
 };
 #endif

@@ -1,38 +1,23 @@
 #include "FeedbackDAL.h"
 #include "Database.h"
-#include "../bus/Utils.h"
+#include <bsoncxx/v_noabi/bsoncxx/builder/stream/document.hpp>
 
-vector<FeedbackDTO> FeedbackDAL::getAll() {
-    vector<FeedbackDTO> list;
-    vector<string> lines = Database::readFile(FILE_PATH);
-    for (const string& line : lines) {
-        vector<string> data = Utils::split(line, '|');
-        if (data.size() >= 4) {
-            FeedbackStatus st = (data[3] == "1") ? RESOLVED : PENDING;
-            list.emplace_back(data[0], data[1], data[2], st);
-        }
-    }
-    return list;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+
+bool FeedbackDAL::insert(const bsoncxx::document::value& doc) {
+    auto col = Database::instance().getDB()["feedbacks"];
+    return col.insert_one(doc.view()).has_value();
 }
 
-void FeedbackDAL::add(FeedbackDTO fb) {
-    string stStr = (fb.getStatus() == RESOLVED) ? "1" : "0";
-    string line = fb.getId() + "|" + fb.getSenderId() + "|" + fb.getContent() + "|" + stStr;
-    Database::appendLine(FILE_PATH, line);
-}
+std::vector<bsoncxx::document::value>
+FeedbackDAL::getByAccountId(const std::string& accountId) {
+    auto col = Database::instance().getDB()["feedbacks"];
+    auto cursor = col.find(document{} << "accountId" << accountId << finalize);
 
-void FeedbackDAL::updateStatus(string feedbackId, FeedbackStatus newStatus) {
-    vector<string> lines = Database::readFile(FILE_PATH);
-    vector<string> newLines;
-    for (const string& line : lines) {
-        vector<string> data = Utils::split(line, '|');
-        if (data.size() >= 4 && data[0] == feedbackId) {
-            string stStr = (newStatus == RESOLVED) ? "1" : "0";
-            string updated = data[0] + "|" + data[1] + "|" + data[2] + "|" + stStr;
-            newLines.push_back(updated);
-        } else {
-            newLines.push_back(line);
-        }
+    std::vector<bsoncxx::document::value> result;
+    for (auto&& d : cursor) {
+        result.emplace_back(bsoncxx::document::value(d));
     }
-    Database::writeFile(FILE_PATH, newLines);
+    return result;
 }

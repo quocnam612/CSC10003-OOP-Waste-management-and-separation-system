@@ -1,42 +1,21 @@
 #include "Database.h"
-#include <fstream>
-#include <iostream>
+// #include "connect.h"  // TODO: Remove this if not needed
 
-using std::ifstream;
-using std::ofstream;
-using std::ios;
-using std::cerr;
-using std::endl;
+Database* Database::_instance = nullptr;
 
-vector<string> Database::readFile(const string& filePath) {
-    vector<string> lines;
-    ifstream file(filePath);
-    if (file.is_open()) {
-        string line;
-        while (getline(file, line)) {
-            if (!line.empty()) lines.push_back(line);
-        }
-        file.close();
+Database::Database()
+    : _mongoInstance{},
+      _client{ getMongoUri() },
+      _db{ _client["waste_management"] } // tên database
+{}
+
+Database& Database::instance() {
+    if (_instance == nullptr) {
+        _instance = new Database();
     }
-    return lines;
+    return *_instance;
 }
 
-void Database::writeFile(const string& filePath, const vector<string>& lines) {
-    ofstream file(filePath);
-    if (file.is_open()) {
-        for (const auto& line : lines) {
-            file << line << "\n";
-        }
-        file.close();
-    } else {
-        cerr << "Loi: Khong the mo file " << filePath << " de ghi.\n";
-    }
-}
-
-void Database::appendLine(const string& filePath, const string& line) {
-    ofstream file(filePath, ios::app);
-    if (file.is_open()) {
-        file << line << "\n";
-        file.close();
-    }
+mongocxx::database Database::getDB() {
+    return _db;
 }

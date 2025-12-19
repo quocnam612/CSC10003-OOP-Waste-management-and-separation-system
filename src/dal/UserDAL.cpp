@@ -1,64 +1,23 @@
 #include "UserDAL.h"
-#include <iostream>
-//hàm tách chuỗi
-vector<string> UserDAL::split(const string& s, char delimiter) {
-    vector<string> tokens;
-    string token;
-    istringstream tokenStream(s);
-    while (getline(tokenStream, token, delimiter)) {
-        tokens.push_back(token);
-    }
-    return tokens;
+#include "Database.h"
+#include <bsoncxx/v_noabi/bsoncxx/builder/stream/document.hpp>
+
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+
+bool UserDAL::insert(const bsoncxx::document::value& doc) {
+    auto col = Database::instance().getDB()["accounts"];
+    auto result = col.insert_one(doc.view());
+    return result.has_value();
 }
-//đọc danh sách user từ file
-vector<UserDTO> UserDAL::readUsers() {
-    vector<UserDTO> users;
-    ifstream file(FILE_PATH);
 
-    if (!file.is_open()) return users;
+std::optional<bsoncxx::document::value>
+UserDAL::findByUsername(const std::string& username) {
+    auto col = Database::instance().getDB()["accounts"];
 
-    string line;
-    while (getline(file, line)) {
-        if (line.empty()) continue;
+    auto filter = document{} << "username" << username << finalize;
+    auto result = col.find_one(filter.view());
 
-        vector<string> data = split(line, '|');
-
-        if (data.size() == 7) {
-            string id = data[0];
-            string username = data[1];
-            string password = data[2];
-            string fullName = data[3];
-            string phone = data[4];
-            string location = data[5]; 
-            
-            int roleInt = stoi(data[6]);
-            UserRole role = (roleInt == 0) ? ADMIN : USER; 
-
-            UserDTO user(id, username, password, fullName, phone, location, role);
-            users.push_back(user);
-        }
-    }
-    file.close();
-    return users;
-}
-//ghi danh sách user vào file
-void UserDAL::writeUsers(const vector<UserDTO>& users) {
-    ofstream file(FILE_PATH);
-
-    if (file.is_open()) {
-        for (const auto& user : users) {
-            int roleInt = (user.getRole() == ADMIN) ? 0 : 1;
-
-            file << user.getId() << "|"
-                 << user.getUsername() << "|"
-                 << user.getPassword() << "|"
-                 << user.getFullName() << "|"
-                 << user.getPhoneNumber() << "|"
-                 << user.getLocation() << "|"  
-                 << roleInt << "\n";
-        }
-        file.close();
-    } else {
-        cout << "Loi: Khong the mo file de ghi!\n";
-    }
+    if (result) return *result;
+    return std::nullopt;
 }

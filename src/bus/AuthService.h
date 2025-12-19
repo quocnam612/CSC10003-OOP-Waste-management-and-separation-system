@@ -1,15 +1,15 @@
 #ifndef AUTHSERVICE_H
 #define AUTHSERVICE_H
 
-#include "../dto/user/UserDTO.h"
+#include "../dto/UserDTO.h"
 #include "../dal/UserDAL.h"
 #include <vector>
 #include <string>
 #include <expected>
-using std ::string;
-using std ::vector; 
-using std ::expected;
-using std ::unexpected;
+using std::string;
+using std::vector;
+using std::expected;
+using std::unexpected;
 
 class AuthService {
 private:
