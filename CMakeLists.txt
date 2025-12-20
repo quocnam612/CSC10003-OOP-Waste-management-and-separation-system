@@ -20,10 +20,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
 # Collect backend sources but skip the Flutter UI tree, which has its own build.
 file(GLOB_RECURSE project_sources CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(FILTER project_sources EXCLUDE REGEX "/src/ui/")
-add_executable(green_route ${project_sources}
-        src/dto/WorkerDto.h
-        src/dto/OperatorDto.cpp
-        src/dto/OperatorDto.h)
+add_executable(green_route ${project_sources})
 
 if(TARGET bsoncxx::bsoncxx AND TARGET mongocxx::mongocxx)
     target_link_libraries(green_route PRIVATE
@@ -42,4 +39,4 @@ else()
         /usr/local/lib/libmongocxx.so
         OpenSSL::Crypto
     )
-endif()
+xx.so()
