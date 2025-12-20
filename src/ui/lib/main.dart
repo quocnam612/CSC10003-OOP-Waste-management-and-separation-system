@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
-import 'screens/auth_screen.dart';
-import 'screens/load_screen.dart';
+// --- CẬP NHẬT IMPORT THEO CẤU TRÚC MỚI ---
+
+// 1. AuthScreen giờ nằm trong features/auth/screens
+import 'features/auth/screens/auth_screen.dart'; 
+
+// 2. LoadScreen (Màn hình chờ)
+// Khuyên bạn nên di chuyển file này vào 'features/auth/screens/' 
+// hoặc 'shared/widgets/' để không còn folder 'screens' cũ nữa.
+import 'features/auth/screens/load_screen.dart'; 
+// Nếu chưa di chuyển, hãy đổi thành: import 'screens/load_screen.dart';
 
 void main() {
   runApp(const WasteManagementApp());
@@ -18,12 +26,14 @@ class WasteManagementApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Roboto',
+        // Định nghĩa màu sắc chủ đạo (Xanh lá)
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF13A05D),
           primary: const Color(0xFF13A05D),
           secondary: const Color(0xFF0A7443),
           brightness: Brightness.light,
         ),
+        // Style chung cho các ô nhập liệu (Input)
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
@@ -37,6 +47,7 @@ class WasteManagementApp extends StatelessWidget {
           ),
         ),
       ),
+      // Màn hình khởi động đầu tiên
       home: const EntryShell(),
     );
   }
@@ -50,10 +61,12 @@ class EntryShell extends StatefulWidget {
 }
 
 class _EntryShellState extends State<EntryShell> {
+  // Trạng thái loading giả lập (3 giây đầu)
   bool _isLoading = true;
 
   @override
   Widget build(BuildContext context) {
+    // 1. Nếu đang loading -> Hiển thị LoadScreen
     if (_isLoading) {
       return LoadScreen(
         onFinished: () {
@@ -64,6 +77,8 @@ class _EntryShellState extends State<EntryShell> {
       );
     }
 
+    // 2. Load xong -> Chuyển sang AuthScreen (Đăng nhập/Đăng ký)
+    // AuthScreen sẽ tự điều hướng sang Dashboard tùy theo vai trò
     return const AuthScreen();
   }
 }
