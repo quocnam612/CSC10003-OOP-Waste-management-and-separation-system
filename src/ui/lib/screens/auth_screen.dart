@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../components/auth_screen/login_panel.dart';
 import '../components/auth_screen/signin_panel.dart';
-import '../components/auth_screen/title_field.dart';
 import '../services/auth_api.dart';
+import '../widgets/background_pattern.dart';
+import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -67,11 +68,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     if (_loginFormKey.currentState?.validate() != true) return;
     setState(() => _isLoginLoading = true);
     try {
-      final result = await AuthApi.login(
+      await AuthApi.login(
         username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
-      _showSnack('Đăng nhập thành công: ${result['username'] ?? 'user'}');
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
+        ),
+      );
     } catch (e) {
       _showSnack('Đăng nhập thất bại: ${e.toString()}', isError: true);
     } finally {
@@ -132,115 +138,111 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       body: Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          'assets/images/bg_pattern.png',
-          fit: BoxFit.cover,
-        ),
+        const BackgroundPattern(showTitle: true),
         LayoutBuilder(
           builder: (context, constraints) {
-            final double maxWidth = constraints.maxWidth < 640 ? constraints.maxWidth : 460;
+            final double contentPadding = constraints.maxWidth < 768 ? 16 : 32;
+            final double availableWidth = constraints.maxWidth - (contentPadding * 2);
+            final double targetWidth = constraints.maxWidth < 640 ? availableWidth : 460.0;
+            final double panelWidth = targetWidth.clamp(0.0, 460.0).toDouble();
 
             return Center(
               child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const TitleField(),
-                  const SizedBox(height: 56),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeInOut,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 600),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      layoutBuilder: (Widget? currentChild, List<Widget> previous) {
-                        return Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.center,
-                          children: [
-                            ...previous,
-                            if (currentChild != null) currentChild,
-                          ],
-                        );
-                      },
-                      transitionBuilder: (child, animation) {
-                        final bool isRegisterChild = child.key == const ValueKey('register');
-                        final bool isEntering = animation.status != AnimationStatus.reverse;
-                        final double direction = isRegisterChild ? 1.0 : -1.0;
-                        final double offScreenDistance = MediaQuery.of(context).size.width;
-                        final Animation<double> offsetAnimation = animation.drive(
-                          Tween<double>(
-                            begin: isEntering ? direction * offScreenDistance : 0.0,
-                            end: isEntering ? 0.0 : direction * offScreenDistance,
-                          ).chain(
-                            CurveTween(curve: Curves.easeInOutCubic),
-                          ),
-                        );
-                      return AnimatedBuilder(
-                        animation: offsetAnimation,
-                        child: child,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(offsetAnimation.value, 0),
-                            child: child,
-                          );
-                        },
+                padding: EdgeInsets.symmetric(
+                  horizontal: contentPadding,
+                  vertical: 32,
+                ),
+                child: AnimatedSize(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 600),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    layoutBuilder: (Widget? currentChild, List<Widget> previous) {
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          ...previous,
+                          if (currentChild != null) currentChild,
+                        ],
                       );
                     },
-                    child: _isRegister ? SigninPanel(
-                      key: const ValueKey('register'),
-                      maxWidth: maxWidth,
-                      formKey: _signinFormKey,
-                      fullNameController: _registerFullNameController,
-                      usernameController: _registerUsernameController,
-                      phoneController: _registerPhoneController,
-                      passwordController: _registerPasswordController,
-                      confirmPasswordController: _registerConfirmPasswordController,
-                      roles: _roles,
-                      selectedRole: _registerSelectedRole,
-                      onRoleChanged: (value) {
-                        setState(() => _registerSelectedRole = value);
-                      },
-                      primaryColor: primary,
-                      onLogin: () {
-                        setState(() => _isRegister = false);
-                      },
-                      onSubmit: () {
-                        _handleRegister();
-                      },
-                      isSubmitting: _isRegisterLoading,
-                    )
-                        : LoginPanel(
-                            key: const ValueKey('login'),
-                            maxWidth: maxWidth,
-                            formKey: _loginFormKey,
-                            usernameController: _usernameController,
-                            passwordController: _passwordController,
-                            roles: _roles,
-                            selectedRole: _loginSelectedRole,
-                            onRoleChanged: (value) {
-                              setState(() => _loginSelectedRole = value);
-                            },
-                            primaryColor: primary,
-                            onRegister: () {
-                              setState(() => _isRegister = true);
-                            },
-                            onSubmit: () {
-                              _handleLogin();
-                            },
-                            isSubmitting: _isLoginLoading,
-                          ),
+                    transitionBuilder: (child, animation) {
+                      final Animation<Offset> slideAnimation = animation.drive(
+                        Tween<Offset>(
+                          begin: const Offset(-1.0, 0.0),
+                          end: Offset.zero,
+                        ).chain(
+                          CurveTween(curve: Curves.easeInOutCubic),
                         ),
+                      );
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: slideAnimation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: panelWidth,
+                        child: _isRegister
+                            ? SigninPanel(
+                                key: const ValueKey('register'),
+                                maxWidth: panelWidth,
+                                formKey: _signinFormKey,
+                                fullNameController: _registerFullNameController,
+                                usernameController: _registerUsernameController,
+                                phoneController: _registerPhoneController,
+                                passwordController: _registerPasswordController,
+                                confirmPasswordController: _registerConfirmPasswordController,
+                                roles: _roles,
+                                selectedRole: _registerSelectedRole,
+                                onRoleChanged: (value) {
+                                  setState(() => _registerSelectedRole = value);
+                                },
+                                primaryColor: primary,
+                                onLogin: () {
+                                  setState(() => _isRegister = false);
+                                },
+                                onSubmit: () {
+                                  _handleRegister();
+                                },
+                                isSubmitting: _isRegisterLoading,
+                              )
+                            : LoginPanel(
+                                key: const ValueKey('login'),
+                                maxWidth: panelWidth,
+                                formKey: _loginFormKey,
+                                usernameController: _usernameController,
+                                passwordController: _passwordController,
+                                roles: _roles,
+                                selectedRole: _loginSelectedRole,
+                                onRoleChanged: (value) {
+                                  setState(() => _loginSelectedRole = value);
+                                },
+                                primaryColor: primary,
+                                onRegister: () {
+                                  setState(() => _isRegister = true);
+                                },
+                                onSubmit: () {
+                                  _handleLogin();
+                                },
+                                isSubmitting: _isLoginLoading,
+                              ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
+        ),
         ],
       ),
     );

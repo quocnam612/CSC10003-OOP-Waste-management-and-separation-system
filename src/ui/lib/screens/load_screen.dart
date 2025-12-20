@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../widgets/background_pattern.dart';
+
 class LoadScreen extends StatefulWidget {
   const LoadScreen({super.key, this.onFinished});
 
@@ -42,10 +44,7 @@ class _LoadScreenState extends State<LoadScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/images/bg_pattern.png',
-            fit: BoxFit.cover,
-          ),
+          const BackgroundPattern(),
           Center(
             child: RotationTransition(
               turns: _rotationController,
