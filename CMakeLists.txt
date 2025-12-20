@@ -39,4 +39,4 @@ else()
         /usr/local/lib/libmongocxx.so
         OpenSSL::Crypto
     )
-xx.so()
+endif()
