@@ -1,0 +1,294 @@
+\section{Quy trình thực hiện}
+
+\subsection{Xây dựng RTP/RTSP server và client (4đ)}
+Các file trong phần này nằm trong thư mục \textbf{1\_RTSP\_RTP} \\
+Đây là phiên bản đầu tiên cơ bản nhất của bài lab, yêu cầu xây dựng hệ thống streaming video sử dụng giao thức RTSP để điều khiển và RTP để truyền tải dữ liệu video từ server đến client. 
+
+\subsubsection{Ý tưởng}
+Hoàn thiện giao thức RTSP trên client và đóng gói dữ liệu RTP trên server để truyền tải video từ server đến client trên các hàm đã được tạo sẵn.
+
+\subsubsection{Hoàn thiện Client.py - Giao thức RTSP của client}
+Mô hình trang thái của client:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/states.png}
+    \caption{Sơ đồ trạng thái và chuyển đổi của client RTSP}
+\end{figure}
+
+Hoàn thiện hàm gửi RTSP request - sendRtspRequest(): 
+\lstinputlisting[language=Python]{code/sendRtspRequest.py}
+\begin{itemize}
+    \item Hàm build chuỗi request. Mỗi lần gửi đều tăng \texttt{CSeq} để server đồng bộ và gắn \texttt{Session} để nhận biết sau \texttt{SETUP}. Cụ thể hơn:
+    \begin{itemize}
+        \item \texttt{SETUP} request: Chương trình sẽ kiểm tra trạng thái hiện tại của client, nếu là \texttt{INIT} thì tạo request \texttt{SETUP} và bắt đầu chạy nền phương thức recvRtspReply (nhận các RTSP reply từ server). Một request \texttt{SETUP} sẽ có dạng:
+        \begin{lstlisting}[language=Python]
+SETUP <Video_File> RTSP/1.0
+CSeq: <CSeq>
+Transport: RTP/UDP; client_port= <RTP_Port>\end{lstlisting}
+        Ví dụ:
+        \begin{lstlisting}[language=Python]
+SETUP video/movie288.Mjpeg RTSP/1.0
+CSeq: 1
+Transport: RTP/UDP; client_port= 8090\end{lstlisting} 
+        \item \texttt{PLAY} request: Chương trình sẽ kiểm tra trạng thái hiện tại của client, nếu là \texttt{READY} thì tạo request \texttt{PLAY} có dạng:
+        \begin{lstlisting}[language=Python]
+PLAY <Video_File> RTSP/1.0
+CSeq: <CSeq>
+Session: <Session_ID>\end{lstlisting}
+        Ví dụ:
+        \begin{lstlisting}[language=Python]
+PLAY video/movie288.Mjpeg RTSP/1.0
+CSeq: 2
+Session: 619227\end{lstlisting} 
+        \item \texttt{PAUSE} request: Chương trình sẽ kiểm tra trạng thái hiện tại của client, nếu là \texttt{PLAYING} thì tạo request \texttt{PAUSE} có dạng:
+        \begin{lstlisting}[language=Python]
+PAUSE <Video_File> RTSP/1.0
+CSeq: <CSeq>
+Session: <Session_ID>\end{lstlisting}
+        Ví dụ:
+        \begin{lstlisting}[language=Python]
+PAUSE video/movie288.Mjpeg RTSP/1.0
+CSeq: 3
+Session: 619227\end{lstlisting} 
+        \item \texttt{TEARDOWN} request: Chương trình sẽ kiểm tra trạng thái hiện tại của client, nếu không là \texttt{INIT}\ (là \texttt{READY} hoặc \texttt{PLAYING}) thì tạo request \texttt{TEARDOWN} có dạng:
+        \begin{lstlisting}[language=Python]
+TEARDOWN <Video_File> RTSP/1.0
+CSeq: <CSeq>
+Session: <Session_ID>\end{lstlisting}
+        Ví dụ:
+        \begin{lstlisting}[language=Python]
+TEARDOWN video/movie288.Mjpeg RTSP/1.0
+CSeq: 4
+Session: 619227\end{lstlisting} 
+    \end{itemize}
+    \item Sau khi dựng xong, request được encode và đẩy qua socket TCP tới server RTSP.
+\end{itemize}
+
+Hoàn thiện hàm phân tích RTSP reply - parseRtspReply(): 
+\lstinputlisting[language=Python]{code/parseRtspReply.py}
+\begin{itemize}
+    \item Phản hồi được tách theo từng dòng để lấy \texttt{CSeq} và \texttt{Session}. Client chỉ xử lý khi số thứ tự trùng với gói vừa gửi để tránh trạng thái cũ. Ví dụ một phản hồi có dạng:
+    \begin{lstlisting}[language=Python]
+RTSP/1.0 <HTTP_Status_Code> <Phrase>
+CSeq: <CSeq>
+Session: <Session_ID>\end{lstlisting}
+    \item Khi mã trạng thái HTTP là 200, client cập nhật trạng thái mới dựa trên request đã gửi:
+    \begin{itemize}
+        \item Sau \texttt{SETUP}, trạng thái chuyển từ \texttt{INIT} sang \texttt{READY}. Sau đó mở port RTP bằng hàm openRtpPort().
+        \item Sau \texttt{PLAY}, trạng thái chuyển từ \texttt{READY} sang \texttt{PLAYING} và bắt đầu chạy nền hàm nhận gói RTP.
+        \item Sau \texttt{PAUSE}, trạng thái chuyển từ \texttt{PLAYING} sang \texttt{READY} và dừng hàm nhận gói RTP.
+        \item Sau \texttt{TEARDOWN}, trạng thái chuyển về \texttt{INIT} và đóng socket RTP.
+    \end{itemize}
+\end{itemize}
+
+Hoàn thiện hàm kết nối tới port của RTP - openRtpPort(): 
+\lstinputlisting[language=Python]{code/openRtpPort.py}
+\begin{itemize}
+    \item Client khởi tạo socket UDP (\texttt{AF\_INET, SOCK\_DGRAM}) (AF\_INET: IPv4, SOCK\_DGRAM: UDP) cùng timeout ngắn để việc nhận khung không bị block.
+    \item Hàm bind trực tiếp vào \texttt{rtpPort}; nếu cổng đã được sử dụng, chương trình sẽ cảnh báo không thể bind port đó.
+\end{itemize}
+
+\subsubsection{Hoàn thiện RtpPacket.py - Giao thức RTP của server}
+Hoàn thiện hàm encapsulation - encode(): 
+\lstinputlisting[language=Python]{code/encode.py}
+\textbf{header}: mảng byte có kích thước 12 bytes
+\begin{itemize}
+    \item Byte thứ 1 (8 bits): chứa trường Version, Padding, Extension, Contributing Source Count và có dạng V-V-P-X-CC-CC-CC-CC
+    \begin{itemize}
+        \item version \& 0x03: lấy 2 bit cuối của version (03[16] = 0000 0011[2])
+        \item << 6: dịch trái 6 bit để đưa về vị trí 2 bit đầu tiên trong byte (eg. V = 2 => 1100 0000[2])
+        \item Tương tự với các trường padding, extension, lúc này còn 4 bit cuối cùng là CC
+        \item cc \& 0x0F: chỉ lấy 4 bit cuối của cc (0F[16] = 0000 1111[2])
+    \end{itemize}
+    \item Byte thứ 2 (8 bits): chứa trường Marker Bit, Payload Type và có dạng M-PT-PT-PT-PT-PT-PT-PT (các logic tương tự byte 1)
+    \item Byte thứ 3-4 (16 bits): chỉ chứa trường Sequence Number
+    \begin{itemize}
+        \item (seqnum >> 8) \& 0xFF: lấy 8 bit đầu của seqnum (0xFF[16] = 1111 1111[2])
+        \item seqnum \& 0xFF: lấy 8 bit cuối của seqnum
+    \end{itemize}
+    \item Byte thứ 5-8 (32 bits): chỉ chứa trường Timestamp, logic tương tự byte 3-4
+    \item Byte thứ 9-12 (32 bits): chỉ chứa trường Synchronization Source Identifier (SSRC), logic tương tự byte 3-4
+\end{itemize}
+
+Phần header trong python sẽ có dạng như sau, với mỗi dòng tương ứng với 4 bytes (32 bits):
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/realRTP.png}
+    \caption{Cấu trúc mảng header}
+\end{figure} 
+
+\subsubsection{Thử nghiệm}
+Thực hiện chạy server RTSP/RTP và client RTSP trên cùng máy tính với video mẫu qua câu lệnh:
+\begin{itemize}
+    \item Ternimal 1: chạy server RTSP/RTP (python Server.py \textbf{<PORT>}). Ví Dụ:
+    \begin{lstlisting}[language=bash] 
+python 1_RTSP_RTP/Server.py 8089 \end{lstlisting}
+    \item Ternimal 2: chạy client RTSP (python ClientLauncher.py \textbf{<SERVER\_IP>} \textbf{<RTSP\_PORT>} \textbf{<RTP\_PORT>} \textbf{<VIDEO\_FILE>}). Ví Dụ:
+    \begin{lstlisting}[language=bash] 
+python 1_RTSP_RTP/ClientLauncher.py 127.0.0.1 8089 8090 video/movie288.Mjpeg \end{lstlisting}
+\end{itemize}
+Output thu được khi chọn các nút (Setup -> Play -> Pause) trên giao diện client:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/1-demoOutput.png}
+    \caption{Output RTSP/GUI client tiêu chí 1}
+\end{figure}
+Có thể thấy client đã gửi đúng các request RTSP và chạy được video qua giao thức RTP. \\
+\textbf{Nhược điểm:} Với video có độ phân giải cao (HD trở lên) khi 1 frame vượt quá kích thước gói UDP sẽ bị tràn byte qua các gói khác, dẫn đến việc giải mã sai các frame tiếp theo và báo lỗi.
+
+\subsection{Bổ sung HD video streaming (3đ)}
+Các file trong phần này nằm trong thư mục \textbf{2\_HD\_Video\_Streaming}. \\
+Đây là phiên bản nâng cấp của phần 1 nhằm hỗ trợ streaming video có độ phân giải cao (HD - 720p, Full HD - 1080p).
+
+\subsubsection{Ý tưởng}
+Khắc phục nhược điểm của phần 1 bằng cách chia nhỏ frame video thành các mảnh (fragment) có kích thước phù hợp với gói UDP dựa trên MTU (1500 bytes).
+
+Mỗi fragment sẽ được đóng gói trong một gói RTP riêng biệt (max 20Kb) với đầy đủ header và payload. Client sẽ nhận các gói RTP, tái tạo lại các fragment và ghép chúng lại thành frame hoàn chỉnh bằng cách nhận diện các SOI, EOI trong payload (Marker Bit không được sử dụng do đã bị giới hạn giá trị bằng 0).
+
+\subsubsection{Hoàn thiện cơ chế chia nhỏ frame thành các fragment}
+Trước hết để xử lý các video HD không có prefix cho biết độ dài frame, ta cần thêm một số phương thức trong file \textbf{VideoStream.py}:
+
+\lstinputlisting[language=Python]{code/detectLengthPrefix.py}
+Phương thức này để kiểm tra xem file video có sử dụng length prefix (5 bytes đầu chứa số độ dài frame) hay không. Nếu có, ta sẽ sử dụng phương thức cũ để đọc frame. Nếu không, ta sẽ sử dụng phương thức bên dưới.
+
+\lstinputlisting[language=Python]{code/loadRawFrames.py}
+Phương thức này sẽ lưu các frame video vào một danh sách (danh sách này sẽ được lưu bên phía server) bằng cách tìm kiếm các byte SOI (Start of Image - \texttt{0xFFD8}) và EOI (End of Image - \texttt{0xFFD9}) trong file video. Mỗi khi tìm thấy một cặp SOI và EOI, ta sẽ trích xuất dữ liệu giữa chúng và lưu vào danh sách frames.
+
+\lstinputlisting[language=Python]{code/nextFrame.py}
+Phương thức này sẽ trả về frame tiếp theo tùy theo loại Mjpeg của video và cộng thêm 1 cho chỉ số thứ tự frame hiện tại:
+\begin{itemize}
+    \item Nếu video có length prefix, ta sẽ đọc 5 bytes đầu để lấy độ dài frame - \texttt{framelength}, sau đó đọc \texttt{framelength} tiếp theo là dữ liệu frame.
+    \item Nếu video không có length prefix, ta sẽ lấy frame từ danh sách frames đã lưu trước đó.
+\end{itemize}
+
+Tiếp theo, ta sẽ chỉnh sửa hàm gửi RTP server phía server trong \textbf{ServerWorker.py} để chia nhỏ frame thành các fragment và gửi từng fragment trong một gói RTP riêng biệt:
+
+\lstinputlisting[language=Python]{code/sendRtp.py}
+Việc gửi RTP sẽ được thực hiện liên tục trong vòng lặp cho đến khi nhấn \texttt{PAUSE}, cụ thể:
+\begin{enumerate}
+    \item Lấy 1 frame tiếp theo bằng hàm \texttt{nextFrame()}.
+    \item Chia frame này thành các fragment có kích thước \texttt{MAX\_PAYLOAD} (1500 bytes) để đảm bảo không vượt quá giới hạn của gói UDP.
+    \item Mỗi fragment sẽ được đóng gói trong một gói RTP riêng biệt với đầy đủ header và payload bằng hàm \texttt{RtpPacket.encode()}.
+    \item Gửi từng gói RTP qua socket UDP tới client.
+\end{enumerate}
+
+Cuối cùng, ta sẽ chỉnh sửa hàm nhận RTP client và thêm một số hàm cần thiết trong \textbf{Client.py} để tái tạo lại các fragment và ghép chúng thành frame hoàn chỉnh:
+
+\lstinputlisting[language=Python]{code/tryAssembleFrame.py}
+Sau khi nhận được một gói RTP, ta sẽ trích xuất payload và lưu vào \texttt{frameBuffer} và gọi hàm \texttt{tryAssembleFrame()} để kiểm tra xem trong \texttt{frameBuffer} đã có đủ một frame hoàn chỉnh chưa. Nếu có, ta sẽ ghép các fragment lại thành frame hoàn chỉnh và render lên giao diện.
+
+
+\subsubsection{Hoàn thiện cơ chế bỏ qua các frame bị trễ để đảm bảo đồ mượt khi phát video}
+Trong quá trình nhận gói RTP, do tính chất không kết nối của UDP và việc chia nhỏ frame thành các fragment, có thể xảy ra tình trạng mất gói hoặc trễ gói. Điều này dẫn đến việc client không thể tái tạo đúng frame hoàn chỉnh từ các fragment nhận được. Để khắc phục vấn đề này và đảm bảo tính mượt mà khi phát video, ta sẽ bổ sung cơ chế bỏ qua các frame bị trễ dựa trên số thứ tự frame trong phương thức \texttt{listenRtp.py} trong \textbf{Client.py}:
+
+\lstinputlisting[language=Python]{code/listenRtp.py}
+Hàm sẽ kiểm tra các điều kiện sau:
+\begin{itemize}
+    \item Nếu số thứ tự frame nhận được (\texttt{frameId}) $<$ số thứ tự frame đang chờ xử lý (\texttt{frameNbr}) $\rightarrow$  frame này đã bị trễ và không còn cần thiết $\Rightarrow$  bỏ qua frame này.
+    \item Nếu số thứ tự frame nhận được (\texttt{frameId}) $>$ số thứ tự frame đang chờ xử lý (\texttt{pendingFrameId}) $\rightarrow$ có frame bị mất $\Rightarrow$ tăng biến đếm \texttt{frameLoss} để theo dõi số frame bị mất.
+    \item Chỉ khi số thứ tự frame nhận được (\texttt{frameId}) $=$ số thứ tự frame đang chờ xử lý (\texttt{pendingFrameId}) $\Rightarrow$ ghép các fragment thành frame hoàn chỉnh và hiển thị lên giao diện.
+\end{itemize}
+
+Ngoài ra hàm cũng sẽ in ra terminal frame hiện tại và lặp lại cho đến khi qua frame tiếp theo (số dòng lặp lại là số fragment của frame đó).
+
+\subsubsection{Hoàn thiện tính năng hiện số frame mất và lưu lượng mạng trên giao diện}
+Các thông số này được cập nhật trong hàm \texttt{updateStats.py} trong \textbf{Client.py}:
+
+\lstinputlisting[language=Python]{code/updateStats.py}
+\begin{itemize}
+    \item Số frame nhận được (\texttt{frameNbr}): được cập nhật mỗi khi hiển thị một frame mới lên giao diện trong hàm \texttt{tryAssembleFrame()}.
+    \item Số packet nhận được (\texttt{packetNbr}): được tăng trong hàm \texttt{listenRtp()} mỗi khi nhận được một gói RTP.
+    \item Số frame mất (\texttt{frameLoss}): được tăng trong hàm \texttt{listenRtp()} mỗi khi phát hiện có frame bị mất.
+    \item Lưu lượng mạng (Network Throughput): được tính bằng tổng số byte nhận được chia cho thời gian đã trôi qua kể từ khi bắt đầu nhận gói RTP.
+    \item FPS được tính bằng số frame đã trôi qua trong 1 giây trước đó.
+\end{itemize}
+Ngoài ra, container chứa video sẽ scale theo kích thước cửa sổ để hiển thị video HD không bị crop và dễ nhìn hơn.
+
+\subsubsection{Thử nghiệm}
+Thực hiện chạy server RTSP/RTP và client RTSP trên cùng máy tính với video mẫu qua câu lệnh tương tự phần 1. Ví Dụ:
+\begin{itemize}
+    \item Ternimal 1: chạy server RTSP/RTP
+    \begin{lstlisting}[language=bash] 
+python 2_HD/Server.py 8089 \end{lstlisting}
+    \item Ternimal 2: chạy client RTSP
+    \begin{lstlisting}[language=bash] 
+python 2_HD/ClientLauncher.py 127.0.0.1 8089 8090 video/movie1080.Mjpeg\end{lstlisting}
+\end{itemize}
+Output thu được trên giao diện client:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/2-demoOutput.png}
+    \caption{Output RTSP/GUI client tiêu chí 2}
+\end{figure}
+
+\begin{itemize}
+    \item Có thể thấy ở terminal của server, số frame được gửi được in thành nhiều dòng, nghĩa là frame đó đã được chia thành các fragment và gửi đi.
+    \item Trên giao diện client cũng đã gồm đây đủ các thông tin về số frame, packet thu được, frame mất, fps, lưu lượng mạng.
+    \item Các video Mjpeg dù thuộc định dạng nào cũng đã chạy ổn định ở 20fps. 
+\end{itemize}
+
+\textbf{Nhược điểm:} Dù đã gửi và chạy được nhưng với các video có độ phải cao hơn (1440p, 2160p,...) các frame tải chậm hơn tốc độ của video dẫn tới tình trạng mất frame và drop FPS hoặc tệ hơn là video bị đứng.
+
+\subsection{Bổ sung client cache (2.5đ)}
+Các file trong phần này nằm trong thư mục \textbf{3\_Client\_Cache}. \\
+Đây là phiên bản nâng cấp của phần 2 và cũng là phiên bảng cuối cùng nhằm cải thiện trải nghiệm xem video HD bằng cách thêm bộ đệm (buffer) trên client.
+
+\subsubsection{Ý tưởng}
+Khắc phục nhược điểm của phần 2 bằng cách thêm bộ đệm (buffer) trên client để lưu trữ trước một số frame video nhất định trước khi phát. Khi nhấn Play, client sẽ bắt đầu nhận các gói RTP và lưu trữ các frame vào bộ đệm cho đến khi đạt ngưỡng đã định sẵn (ví dụ: 30 frame). Sau đó, client mới bắt đầu phát video từ bộ đệm trong khi tiếp tục nhận và lưu trữ các frame mới vào bộ đệm. Điều này giúp đảm bảo rằng có đủ frame để phát liên tục ngay cả khi tốc độ tải về chậm hơn tốc độ phát video. 
+
+\subsubsection{Hoàn thiện cơ chế bộ đệm phía client}
+Để giải quyết tình trạng mất frame, giật hình, drop FPS hoặc đứng hình khi phát video độ phân giải cao (1080p, 1440p, 2160p), phía client được bổ sung một cơ chế bộ đệm (buffer) trong \textbf{Client.py} như sau:
+\lstinputlisting[language=Python]{code/enqueue.py}
+Phương thức này sẽ thực hiện các bước sau:
+\begin{enumerate}
+    \item Kiểm tra frame hợp lệ.
+    \item Thêm frame vào \texttt{frameQueue} (queue chính phục vụ playback).
+    \item Đồng thời thêm ID vào \texttt{frameBuffer} để theo dõi dung lượng buffer.
+    \item Nếu queue vượt quá \texttt{MIN\_BUFFER\_SIZE}, client tự động loại frame cũ nhất $\rightarrow$ tránh lag dồn.
+    \item Nếu buffer vượt \texttt{MAX\_BUFFER\_SIZE}, loại frame buffer cũ $\rightarrow$ giữ mức tối ưu.
+\end{enumerate}
+Một số hằng số được định nghĩa để điều khiển cơ chế bộ đệm:
+\begin{itemize}
+    \item \texttt{MIN\_BUFFER\_SIZE} = 20: yêu cầu phải có tối thiểu 20 frame trước khi bắt đầu phát $\rightarrow$ tránh giật khi bắt đầu video.
+    \item \texttt{MAX\_BUFFER\_SIZE} = 100: client không cho phép buffer quá lớn để tránh tràn bộ nhớ.
+    \item \texttt{deque()}: cấu trúc hàng đợi tốc độ cao dùng để chứa frame hoàn chỉnh.
+\end{itemize}
+
+Giữ tốc độ phát video ổn định ngay cả khi mạng có độ trễ hoặc server gửi chậm (tránh tràn bộ đệm bằng cách đặt giới hạn tối đa) bằng phương thức \texttt{playbackLoop} trong \textbf{Client.py}:
+\lstinputlisting[language=Python]{code/playbackLoop.py}
+Phương thức này sẽ thực hiện các bước sau:
+\begin{enumerate}
+    \item Nếu queue có frame $\rightarrow$ phát ngay, đảm bảo không bị trễ bởi thời gian nhận từ server.
+    \item Nếu queue rỗng $\rightarrow$ chờ frame mới bằng bufferEvent.wait().
+    \item \texttt{TARGET\_FRAME\_INTERVAL} = 1/20 giúp luôn phát đều 20 FPS $\rightarrow$ video mượt ổn định.
+    \item Không có block nào phụ thuộc vào tốc độ nhận gói mạng $\rightarrow$ playback không bị giật.
+\end{enumerate}
+
+\subsubsection{Thử nghiệm}
+Thực hiện chạy server RTSP/RTP và client RTSP trên cùng máy tính với video mẫu qua câu lệnh tương tự phần 1. Ví Dụ:
+\begin{itemize}
+    \item Ternimal 1: chạy server RTSP/RTP
+    \begin{lstlisting}[language=bash] 
+python 3_CACHE/Server.py 8089 \end{lstlisting}
+    \item Ternimal 2: chạy client RTSP
+    \begin{lstlisting}[language=bash] 
+python 3_CACHE/ClientLauncher.py 127.0.0.1 8089 8090 video/movie1440.Mjpeg\end{lstlisting}
+\end{itemize}
+Output thu được trên giao diện client:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/3-demoOutput.png}
+    \caption{Output RTSP/GUI client tiêu chí 3}
+\end{figure}
+
+Có thể thấy video 1440p đã chạy mượt mà ở 20 FPS mà không bị giật hình hay drop frame, ngay cả khi mạng có độ trễ nhẹ. Thanh play bar và buffer bar  cũng phản hồi đúng với thời lượng video.\\
+Lợi ích của cơ chế Client-Side caching:
+\begin{itemize}
+    \item Video ổn định hơn trong khi mạng chưa kịp ổn định
+    \item Giảm giật hình do trễ UDP
+    \item Hỗ trợ phát lại và đọc nhanh frame từ file
+    \item Giảm tải cho server khi client không yêu cầu gửi lại các frame đã có
+\end{itemize}
+Client-side caching làm cho hệ thống RTP/RTSP trở nên mượt mà và gần với mô hình của các nền tảng streaming chuyên nghiệp. Cơ chế queue + file cache giúp đảm bảo tính ổn định và liên tục khi mạng có độ trễ hoặc mất gói
