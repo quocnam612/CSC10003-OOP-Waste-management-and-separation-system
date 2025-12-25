@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../widgets/background_pattern.dart';
+import '../components/global/background_pattern.dart';
 
 class LoadScreen extends StatefulWidget {
   const LoadScreen({super.key, this.onFinished});

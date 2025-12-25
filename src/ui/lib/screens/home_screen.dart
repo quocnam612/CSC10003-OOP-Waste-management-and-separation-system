@@ -1,48 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:ui/screens/manager_screen.dart';
+import 'package:ui/screens/user_screen.dart';
+import 'package:ui/screens/worker_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.userData});
+
+  final Map<String, dynamic> userData;
 
   @override
   Widget build(BuildContext context) {
-    final Color primary = Theme.of(context).colorScheme.primary;
+    final int? resolvedRole = _resolveRole(userData['role']);
+
+    if (resolvedRole == 1) return const ResidentDashboard();
+    if (resolvedRole == 2) return const WorkerDashboard();
+    if (resolvedRole == 3) return const ManagerDashboard();
 
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(
-            Icons.eco,
-            size: 40,
-            color: Colors.white,
-          ),
         title: const Text('GreenRoute'),
-        backgroundColor: primary,
-        foregroundColor: Colors.white,
       ),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.eco,
-              size: 72,
-              color: primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Chào mừng bạn đến với GreenRoute!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Bắt đầu quản lý hành trình rác thải của bạn từ đây.',
-              textAlign: TextAlign.center,
-            ),
-          ],
+        child: Text(
+          'Không xác định được vai trò người dùng.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
     );
+  }
+
+  int? _resolveRole(dynamic role) {
+    if (role is int) return role;
+    if (role is double) return role.toInt();
+    if (role is String) {
+      switch (role.toLowerCase()) {
+        case '1':
+        case 'user':
+        case 'resident':
+        case 'người dân':
+          return 1;
+        case '2':
+        case 'worker':
+        case 'operator':
+        case 'nhân viên thu gom':
+          return 2;
+        case '3':
+        case 'manager':
+        case 'quản lý':
+        case 'quản lý khu vực':
+          return 3;
+      }
+    }
+    return null;
   }
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../components/auth_screen/login_panel.dart';
 import '../components/auth_screen/signin_panel.dart';
+import '../components/global/background_pattern.dart';
 import '../services/auth_api.dart';
-import '../widgets/background_pattern.dart';
 import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -29,7 +29,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   final TextEditingController _registerConfirmPasswordController = TextEditingController();
   
   bool _isRegister = false;
-  String? _loginSelectedRole;
   String? _registerSelectedRole;
   bool _isLoginLoading = false;
   bool _isRegisterLoading = false;
@@ -68,14 +67,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     if (_loginFormKey.currentState?.validate() != true) return;
     setState(() => _isLoginLoading = true);
     try {
-      await AuthApi.login(
+      final userData = await AuthApi.login(
         username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
+          builder: (_) => HomeScreen(userData: userData),
         ),
       );
     } catch (e) {
@@ -136,113 +135,104 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       body: Stack(
-      fit: StackFit.expand,
-      children: [
-        const BackgroundPattern(showTitle: true),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final double contentPadding = constraints.maxWidth < 768 ? 16 : 32;
-            final double availableWidth = constraints.maxWidth - (contentPadding * 2);
-            final double targetWidth = constraints.maxWidth < 640 ? availableWidth : 460.0;
-            final double panelWidth = targetWidth.clamp(0.0, 460.0).toDouble();
-
-            return Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: contentPadding,
-                  vertical: 32,
+        fit: StackFit.expand,
+        children: [
+          const BackgroundPattern(),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 72),
+            child: Column(
+              children: [
+                Text(
+                  'GreenRoute',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 76,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 600),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    layoutBuilder: (Widget? currentChild, List<Widget> previous) {
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          ...previous,
-                          if (currentChild != null) currentChild,
-                        ],
-                      );
-                    },
-                    transitionBuilder: (child, animation) {
-                      final Animation<Offset> slideAnimation = animation.drive(
-                        Tween<Offset>(
-                          begin: const Offset(-1.0, 0.0),
-                          end: Offset.zero,
-                        ).chain(
-                          CurveTween(curve: Curves.easeInOutCubic),
-                        ),
-                      );
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: slideAnimation,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: SizedBox(
-                        width: panelWidth,
-                        child: _isRegister
-                            ? SigninPanel(
-                                key: const ValueKey('register'),
-                                maxWidth: panelWidth,
-                                formKey: _signinFormKey,
-                                fullNameController: _registerFullNameController,
-                                usernameController: _registerUsernameController,
-                                phoneController: _registerPhoneController,
-                                passwordController: _registerPasswordController,
-                                confirmPasswordController: _registerConfirmPasswordController,
-                                roles: _roles,
-                                selectedRole: _registerSelectedRole,
-                                onRoleChanged: (value) {
-                                  setState(() => _registerSelectedRole = value);
-                                },
-                                primaryColor: primary,
-                                onLogin: () {
-                                  setState(() => _isRegister = false);
-                                },
-                                onSubmit: () {
-                                  _handleRegister();
-                                },
-                                isSubmitting: _isRegisterLoading,
-                              )
-                            : LoginPanel(
-                                key: const ValueKey('login'),
-                                maxWidth: panelWidth,
-                                formKey: _loginFormKey,
-                                usernameController: _usernameController,
-                                passwordController: _passwordController,
-                                roles: _roles,
-                                selectedRole: _loginSelectedRole,
-                                onRoleChanged: (value) {
-                                  setState(() => _loginSelectedRole = value);
-                                },
-                                primaryColor: primary,
-                                onRegister: () {
-                                  setState(() => _isRegister = true);
-                                },
-                                onSubmit: () {
-                                  _handleLogin();
-                                },
-                                isSubmitting: _isLoginLoading,
+                Text(
+                  'Ứng dụng quản lí rác',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double contentPadding = constraints.maxWidth < 768 ? 16 : 32;
+              final double availableWidth = constraints.maxWidth - (contentPadding * 2);
+              final double targetWidth = constraints.maxWidth < 640 ? availableWidth : 460.0;
+              final double panelWidth = targetWidth.clamp(0.0, 460.0).toDouble();
+
+              return Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: contentPadding,
+                    vertical: 32,
+                  ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 72),
+                        const SizedBox(height: 32),
+                        ClipRect(
+                          child: AnimatedSize(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                              width: panelWidth,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 28,
                               ),
-                      ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                              child: _isRegister
+                              ? SigninPanel(
+                                  formKey: _signinFormKey,
+                                  fullNameController: _registerFullNameController,
+                                  usernameController: _registerUsernameController,
+                                  phoneController: _registerPhoneController,
+                                  passwordController: _registerPasswordController,
+                                  confirmPasswordController: _registerConfirmPasswordController,
+                                  roles: _roles,
+                                  selectedRole: _registerSelectedRole,
+                                  onRoleChanged: (value) { setState(() => _registerSelectedRole = value); },
+                                  primaryColor: primary,
+                                  onLogin: () { setState(() => _isRegister = false); },
+                                  onSubmit: () { _handleRegister(); },
+                                  isSubmitting: _isRegisterLoading,
+                                )
+                              : LoginPanel(
+                                  formKey: _loginFormKey,
+                                  usernameController: _usernameController,
+                                  passwordController: _passwordController,
+                                  primaryColor: primary,
+                                  onRegister: () { setState(() => _isRegister = true); },
+                                  onSubmit: () { _handleLogin(); },
+                                  isSubmitting: _isLoginLoading,
+                                ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
         ],
       ),
     );
