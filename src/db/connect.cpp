@@ -7,3 +7,11 @@ static mongocxx::client client{ mongocxx::uri("mongodb+srv://admin:admin@cluster
 mongocxx::collection MongoConnection::users() {
     return client["green_route"]["users"];
 }
+
+mongocxx::collection MongoConnection::regions() {
+    return client["green_route"]["regions"];
+}
+
+mongocxx::collection MongoConnection::reports() {
+    return client["green_route"]["reports"];
+}

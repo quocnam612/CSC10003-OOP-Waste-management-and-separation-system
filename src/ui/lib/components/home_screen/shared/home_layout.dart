@@ -38,8 +38,6 @@ class DynamicDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-
     return Drawer(
       child: Column(
         children: [
@@ -49,18 +47,23 @@ class DynamicDrawer extends StatelessWidget {
               padding: EdgeInsets.zero,
               children: [
                 DrawerHeader(
-                  decoration: BoxDecoration(color: primaryColor),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/bg_pattern.png'),
+                      fit: BoxFit.none,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const Icon(Icons.eco, size: 48, color: Colors.white),
-                      const SizedBox(height: 12),
+                      const Icon(Icons.eco, size: 45, color: Colors.white),
+                      const SizedBox(width: 8),
                       Text(
                         drawerHeaderTitle, 
                         style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: 32,
                             fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -137,9 +140,6 @@ class DynamicProfileButton extends StatelessWidget {
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(value: 'detail', child: Row(children: [Icon(Icons.info_outline, color: Colors.blue), SizedBox(width: 12), Text('Thông tin chi tiết')])),
-        const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, color: Colors.orange), SizedBox(width: 12), Text('Sửa hồ sơ')])),
-        const PopupMenuDivider(),
         const PopupMenuItem(value: 'logout', child: Row(children: [Icon(Icons.logout, color: Colors.red), SizedBox(width: 12), Text('Đăng xuất')])),
       ],
     );
@@ -153,6 +153,7 @@ class DashboardLayout extends StatelessWidget {
   final List<MenuItemModel> menuItems;
   final Function(String) onDrawerItemSelected;
   final Function(String) onProfileSelected;
+  final String appName;
   
   final String userName;
   final String userRole;
@@ -166,6 +167,7 @@ class DashboardLayout extends StatelessWidget {
     required this.onProfileSelected,
     required this.userName,
     required this.userRole,
+    this.appName = 'Green Route',
   });
 
   @override
@@ -197,7 +199,7 @@ class DashboardLayout extends StatelessWidget {
       drawer: DynamicDrawer(
         menuItems: menuItems,
         onItemSelected: onDrawerItemSelected,
-        drawerHeaderTitle: userRole,
+        drawerHeaderTitle: appName,
       ),
       
       body: body,

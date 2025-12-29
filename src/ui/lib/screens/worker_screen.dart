@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:ui/components/home_screen/home_layout.dart';
+import 'package:ui/components/home_screen/shared/home_layout.dart';
 import 'package:ui/screens/auth_screen.dart';
 
 import 'package:ui/components/model/menu_item_model.dart';
 
 import 'package:ui/components/home_screen/worker/checkin_panel.dart';
 import 'package:ui/components/home_screen/worker/task_panel.dart';
+import 'package:ui/components/home_screen/shared/settings_panel.dart';
+import 'package:ui/utils/user_data_utils.dart';
 
 class WorkerDashboard extends StatefulWidget {
-  const WorkerDashboard({super.key});
+  final Map<String, dynamic> userData;
+  final String authToken;
+
+  const WorkerDashboard(
+      {super.key, required this.userData, required this.authToken});
 
   @override
   State<WorkerDashboard> createState() => _WorkerDashboardState();
@@ -17,9 +23,27 @@ class WorkerDashboard extends StatefulWidget {
 class _WorkerDashboardState extends State<WorkerDashboard> {
   String _currentView = 'home';
 
-  // --- DỮ LIỆU TĨNH ---
-  final String _workerName = "Trần Văn B";
+  // --- THÔNG TIN NGƯỜI DÙNG ---
+  late final String _workerUsername;
+  String _workerName = "Nhân viên";
   final String _workerRole = "Nhân viên thu gom";
+  String _workerPhone = "---";
+  int _workerRegion = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _workerUsername =
+        UserDataUtils.stringField(widget.userData, 'username', fallback: '');
+    _workerName = UserDataUtils.stringField(
+        widget.userData, 'name',
+        fallback: _workerName);
+    _workerPhone = UserDataUtils.stringField(
+        widget.userData, 'phone',
+        fallback: _workerPhone);
+    _workerRegion =
+        UserDataUtils.intField(widget.userData, 'region', fallback: 0);
+  }
 
   final List<MenuItemModel> _workerMenu = const [
     MenuItemModel(id: 'home', title: 'Trang chủ', icon: Icons.home),
@@ -192,7 +216,20 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
         );
         
       case 'setting':
-        return const Center(child: Text("Màn hình Cài đặt"));
+        return AccountSettingsPanel(
+          username: _workerUsername,
+          initialName: _workerName,
+          initialPhone: _workerPhone,
+          initialRegion: _workerRegion,
+          authToken: widget.authToken,
+          onProfileUpdated: (name, phone, region) {
+            setState(() {
+              _workerName = name;
+              _workerPhone = phone;
+              _workerRegion = region;
+            });
+          },
+        );
         
       default:
         return const DefaultDashboardBody();

@@ -4,17 +4,24 @@ import 'package:ui/screens/user_screen.dart';
 import 'package:ui/screens/worker_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required this.userData});
+  const HomeScreen({super.key, required this.userData, required this.authToken});
 
   final Map<String, dynamic> userData;
+  final String authToken;
 
   @override
   Widget build(BuildContext context) {
-    final int? resolvedRole = _resolveRole(userData['role']);
+    final int? resolvedRole = userData['role'];
 
-    if (resolvedRole == 1) return const ResidentDashboard();
-    if (resolvedRole == 2) return const WorkerDashboard();
-    if (resolvedRole == 3) return const ManagerDashboard();
+    if (resolvedRole == 1) {
+      return ResidentDashboard(userData: userData, authToken: authToken);
+    }
+    if (resolvedRole == 2) {
+      return WorkerDashboard(userData: userData, authToken: authToken);
+    }
+    if (resolvedRole == 3) {
+      return ManagerDashboard(userData: userData, authToken: authToken);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -28,30 +35,5 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  int? _resolveRole(dynamic role) {
-    if (role is int) return role;
-    if (role is double) return role.toInt();
-    if (role is String) {
-      switch (role.toLowerCase()) {
-        case '1':
-        case 'user':
-        case 'resident':
-        case 'người dân':
-          return 1;
-        case '2':
-        case 'worker':
-        case 'operator':
-        case 'nhân viên thu gom':
-          return 2;
-        case '3':
-        case 'manager':
-        case 'quản lý':
-        case 'quản lý khu vực':
-          return 3;
-      }
-    }
-    return null;
   }
 }

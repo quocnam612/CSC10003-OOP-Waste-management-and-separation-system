@@ -5,4 +5,6 @@
 class MongoConnection {
 public:
     static mongocxx::collection users();
+    static mongocxx::collection regions();
+    static mongocxx::collection reports();
 };

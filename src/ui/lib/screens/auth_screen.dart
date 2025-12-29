@@ -67,14 +67,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     if (_loginFormKey.currentState?.validate() != true) return;
     setState(() => _isLoginLoading = true);
     try {
-      final userData = await AuthApi.login(
+      final authResult = await AuthApi.login(
         username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
+      final token = authResult['token'] as String;
+      final userData = authResult['user'] as Map<String, dynamic>;
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => HomeScreen(userData: userData),
+          builder: (_) => HomeScreen(userData: userData, authToken: token),
         ),
       );
     } catch (e) {

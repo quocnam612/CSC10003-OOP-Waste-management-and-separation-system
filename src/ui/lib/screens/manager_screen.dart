@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ui/components/home_screen/home_layout.dart';
+import 'package:ui/components/home_screen/shared/home_layout.dart';
 import '../../screens/auth_screen.dart';
 
 import 'package:ui/components/model/menu_item_model.dart';
@@ -7,9 +7,15 @@ import 'package:ui/components/model/customer_model.dart';
 
 import 'package:ui/components/home_screen/manager/customer_panel.dart';
 import 'package:ui/components/home_screen/manager/customer_form.dart';
+import 'package:ui/components/home_screen/shared/settings_panel.dart';
+import 'package:ui/utils/user_data_utils.dart';
 
 class ManagerDashboard extends StatefulWidget {
-  const ManagerDashboard({super.key});
+  final Map<String, dynamic> userData;
+  final String authToken;
+
+  const ManagerDashboard(
+      {super.key, required this.userData, required this.authToken});
 
   @override
   State<ManagerDashboard> createState() => _ManagerDashboardState();
@@ -18,9 +24,27 @@ class ManagerDashboard extends StatefulWidget {
 class _ManagerDashboardState extends State<ManagerDashboard> {
   String _currentView = 'home';
 
-  // --- A. DỮ LIỆU TĨNH ---
-  final String _managerName = "Nguyễn Văn A";
+  // --- A. THÔNG TIN NGƯỜI DÙNG ---
+  late final String _managerUsername;
+  late String _managerName;
   final String _managerRole = "Quản lý khu vực";
+  late String _managerPhone;
+  late int _managerRegion;
+
+  @override
+  void initState() {
+    super.initState();
+    _managerUsername =
+        UserDataUtils.stringField(widget.userData, 'username', fallback: '');
+    _managerName = UserDataUtils.stringField(
+        widget.userData, 'name',
+        fallback: 'Quản lý');
+    _managerPhone = UserDataUtils.stringField(
+        widget.userData, 'phone',
+        fallback: '---');
+    _managerRegion =
+        UserDataUtils.intField(widget.userData, 'region', fallback: 0);
+  }
 
   final List<MenuItemModel> _managerMenu = const [
     MenuItemModel(id: 'home', title: 'Trang chủ', icon: Icons.home),
@@ -114,7 +138,20 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
       case 'task':
         return const Center(child: Text("Màn hình Nhiệm vụ (Đang phát triển)"));
       case 'setting':
-        return const Center(child: Text("Màn hình Cài đặt (Đang phát triển)"));
+        return AccountSettingsPanel(
+          username: _managerUsername,
+          initialName: _managerName,
+          initialPhone: _managerPhone,
+          initialRegion: _managerRegion,
+          authToken: widget.authToken,
+          onProfileUpdated: (name, phone, region) {
+            setState(() {
+              _managerName = name;
+              _managerPhone = phone;
+              _managerRegion = region;
+            });
+          },
+        );
       
       default:
         return const DefaultDashboardBody();

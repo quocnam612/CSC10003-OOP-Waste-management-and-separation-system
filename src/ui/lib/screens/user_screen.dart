@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:ui/components/home_screen/home_layout.dart';
+import 'package:ui/components/home_screen/shared/home_layout.dart';
 import 'package:ui/screens/auth_screen.dart';
 
 import 'package:ui/components/model/menu_item_model.dart';
 import 'package:ui/components/home_screen/user/feedback_panel.dart';
+import 'package:ui/components/home_screen/shared/settings_panel.dart';
+import 'package:ui/utils/user_data_utils.dart';
 
 class ResidentDashboard extends StatefulWidget {
-  const ResidentDashboard({super.key});
+  final Map<String, dynamic> userData;
+  final String authToken;
+
+  const ResidentDashboard(
+      {super.key, required this.userData, required this.authToken});
 
   @override
   State<ResidentDashboard> createState() => _ResidentDashboardState();
@@ -15,9 +21,27 @@ class ResidentDashboard extends StatefulWidget {
 class _ResidentDashboardState extends State<ResidentDashboard> {
   String _currentView = 'home';
 
-  // --- DỮ LIỆU TĨNH ---
-  final String _userName = "Lê Thị C";
+  // --- THÔNG TIN NGƯỜI DÙNG ---
+  late final String _username;
+  String _userName = "Người dân";
   final String _userRole = "Cư dân";
+  String _userPhone = "---";
+  int _userRegion = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _username =
+        UserDataUtils.stringField(widget.userData, 'username', fallback: '');
+    _userName = UserDataUtils.stringField(
+        widget.userData, 'name',
+        fallback: _userName);
+    _userPhone = UserDataUtils.stringField(
+        widget.userData, 'phone',
+        fallback: _userPhone);
+    _userRegion =
+        UserDataUtils.intField(widget.userData, 'region', fallback: 0);
+  }
 
   final List<MenuItemModel> _residentMenu = const [
     MenuItemModel(id: 'home', title: 'Trang chủ', icon: Icons.home),
@@ -52,7 +76,20 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
         return const FeedbackPanel();
         
       case 'setting':
-        return const Center(child: Text("Cài đặt cá nhân"));
+        return AccountSettingsPanel(
+          username: _username,
+          initialName: _userName,
+          initialPhone: _userPhone,
+          initialRegion: _userRegion,
+          authToken: widget.authToken,
+          onProfileUpdated: (name, phone, region) {
+            setState(() {
+              _userName = name;
+              _userPhone = phone;
+              _userRegion = region;
+            });
+          },
+        );
         
       default:
         return const DefaultDashboardBody();

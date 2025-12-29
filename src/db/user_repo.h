@@ -9,4 +9,6 @@ public:
     static std::optional<bsoncxx::document::value> findByUsername(const std::string& username);
     static bool usernameExists(const std::string& username);
     static bool insertUser(const bsoncxx::document::view_or_value& userDoc);
+    static bool updateProfile(const std::string& username, const std::string& name, const std::string& phone, int region);
+    static bool updatePasswordHash(const std::string& username, const std::string& newHash);
 };

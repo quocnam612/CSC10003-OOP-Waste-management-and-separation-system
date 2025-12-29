@@ -2,6 +2,7 @@
 #include "connect.h"
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/helpers.hpp>
+#include <chrono>
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
@@ -21,4 +22,42 @@ bool UserRepository::usernameExists(const std::string& username) {
 bool UserRepository::insertUser(const bsoncxx::document::view_or_value& userDoc) {
     auto result = MongoConnection::users().insert_one(userDoc);
     return static_cast<bool>(result);
+}
+
+bool UserRepository::updateProfile(const std::string& username, const std::string& name, const std::string& phone, int region) {
+    using bsoncxx::builder::stream::open_document;
+    using bsoncxx::builder::stream::close_document;
+
+    bsoncxx::builder::stream::document updateDoc{};
+    updateDoc << "$set" << open_document
+              << "name" << name
+              << "phone" << phone
+              << "region" << region
+              << "updated_at" << bsoncxx::types::b_date(std::chrono::system_clock::now())
+              << close_document;
+
+    auto result = MongoConnection::users().update_one(
+        document{} << "username" << username << finalize,
+        updateDoc.view()
+    );
+
+    return result && result->modified_count() > 0;
+}
+
+bool UserRepository::updatePasswordHash(const std::string& username, const std::string& newHash) {
+    using bsoncxx::builder::stream::open_document;
+    using bsoncxx::builder::stream::close_document;
+
+    bsoncxx::builder::stream::document updateDoc{};
+    updateDoc << "$set" << open_document
+              << "password_hash" << newHash
+              << "updated_at" << bsoncxx::types::b_date(std::chrono::system_clock::now())
+              << close_document;
+
+    auto result = MongoConnection::users().update_one(
+        document{} << "username" << username << finalize,
+        updateDoc.view()
+    );
+
+    return result && result->modified_count() > 0;
 }
