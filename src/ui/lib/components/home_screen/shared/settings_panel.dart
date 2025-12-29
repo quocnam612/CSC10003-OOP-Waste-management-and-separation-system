@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ui/services/settings_api.dart';
 
+class _RegionOption {
+  const _RegionOption({required this.id, required this.name});
+
+  final int id;
+  final String name;
+}
+
 class AccountSettingsPanel extends StatefulWidget {
   final String username;
   final String initialName;
@@ -29,20 +36,25 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
 
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
-  late final TextEditingController _regionController;
   final TextEditingController _currentPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _isProfileSubmitting = false;
   bool _isPasswordSubmitting = false;
+  int? _selectedRegion;
+  List<_RegionOption> _regions = [];
+  bool _isRegionsLoading = false;
+  String? _regionError;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName);
     _phoneController = TextEditingController(text: widget.initialPhone);
-    _regionController = TextEditingController(text: widget.initialRegion.toString());
+    _selectedRegion =
+        widget.initialRegion > 0 ? widget.initialRegion : null;
+    _loadRegions();
   }
 
   @override
@@ -50,14 +62,18 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialName != widget.initialName) _nameController.text = widget.initialName;
     if (oldWidget.initialPhone != widget.initialPhone) _phoneController.text = widget.initialPhone;
-    if (oldWidget.initialRegion != widget.initialRegion) _regionController.text = widget.initialRegion.toString();
+    if (oldWidget.initialRegion != widget.initialRegion) {
+      setState(() {
+        _selectedRegion =
+            widget.initialRegion > 0 ? widget.initialRegion : null;
+      });
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _regionController.dispose();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
@@ -76,11 +92,62 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
       );
   }
 
+  Future<void> _loadRegions() async {
+    setState(() {
+      _isRegionsLoading = true;
+      _regionError = null;
+    });
+
+    try {
+      final rawRegions = await SettingsApi.fetchRegions(token: widget.authToken);
+      if (!mounted) return;
+
+      final regions = rawRegions
+          .map((region) {
+            final idValue = region['id'] ?? region['ID'];
+            final nameValue = region['name'] ?? region['Name'];
+            if (idValue == null || nameValue == null) return null;
+
+            int? id;
+            if (idValue is num) {
+              id = idValue.toInt();
+            } else if (idValue is String) {
+              id = int.tryParse(idValue);
+            }
+            if (id == null) return null;
+
+            return _RegionOption(id: id, name: nameValue.toString());
+          })
+          .whereType<_RegionOption>()
+          .toList()
+        ..sort((a, b) => a.id.compareTo(b.id));
+
+      setState(() {
+        _regions = regions;
+        if (_selectedRegion != null &&
+            !_regions.any((region) => region.id == _selectedRegion)) {
+          _selectedRegion = null;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _regionError = 'Không thể tải khu vực: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRegionsLoading = false;
+        });
+      }
+    }
+  }
+
   Future<void> _handleProfileSubmit() async {
     if (_profileFormKey.currentState?.validate() != true) return;
-    final int? region = int.tryParse(_regionController.text.trim());
+    final region = _selectedRegion;
     if (region == null) {
-      _showSnack('Khu vực không hợp lệ', isError: true);
+      _showSnack('Vui lòng chọn khu phố', isError: true);
       return;
     }
 
@@ -93,18 +160,17 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
 
     setState(() => _isProfileSubmitting = true);
     try {
+      final trimmedName = _nameController.text.trim();
+      final trimmedPhone = _phoneController.text.trim();
+
       await SettingsApi.updateProfile(
         username: widget.username,
-        name: _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
+        name: trimmedName,
+        phone: trimmedPhone,
         region: region,
         token: token,
       );
-      widget.onProfileUpdated?.call(
-        _nameController.text.trim(),
-        _phoneController.text.trim(),
-        region,
-      );
+      widget.onProfileUpdated?.call(trimmedName, trimmedPhone, region);
       _showSnack('Đã cập nhật thông tin cá nhân');
     } catch (e) {
       _showSnack('Cập nhật thất bại: $e', isError: true);
@@ -181,6 +247,85 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
     );
   }
 
+  Widget _buildRegionField() {
+    if (_isRegionsLoading) {
+      return InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Phường',
+          border: OutlineInputBorder(),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 12),
+            Text('Đang tải danh sách phường...'),
+          ],
+        ),
+      );
+    }
+
+    if (_regionError != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InputDecorator(
+            decoration: const InputDecoration(
+              labelText: 'Phường',
+              border: OutlineInputBorder(),
+            ),
+            child: Text(
+              _regionError!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _loadRegions,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Thử lại'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_regions.isEmpty) {
+      return InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Phường',
+          border: OutlineInputBorder(),
+        ),
+        child: const Text('Chưa có dữ liệu phường'),
+      );
+    }
+
+    return DropdownButtonFormField<int>(
+      value: _selectedRegion,
+      decoration: const InputDecoration(
+        labelText: 'Phường',
+        border: OutlineInputBorder(),
+      ),
+      hint: const Text('Vui lòng chọn phường'),
+      isExpanded: true,
+      items: _regions
+          .map(
+            (region) => DropdownMenuItem<int>(
+              value: region.id,
+              child: Text(region.name),
+            ),
+          )
+          .toList(),
+      onChanged: (value) => setState(() => _selectedRegion = value),
+      validator: (value) => value == null ? 'Vui lòng chọn phường' : null,
+    );
+  }
+
   Widget _buildProfileCard(Color primary) {
     return Card(
       elevation: 2,
@@ -230,23 +375,7 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _regionController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Mã khu vực',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Vui lòng nhập khu vực';
-                  }
-                  if (int.tryParse(value.trim()) == null) {
-                    return 'Khu vực phải là số';
-                  }
-                  return null;
-                },
-              ),
+              _buildRegionField(),
               const SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerRight,

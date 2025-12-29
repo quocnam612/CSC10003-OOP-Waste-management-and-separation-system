@@ -1,4 +1,5 @@
 #include "session_manager.h"
+#include "crow.h"
 
 #include <random>
 using std::lock_guard;
@@ -19,13 +20,25 @@ string SessionManager::issueToken(const string& username) {
     return token;
 }
 
-optional<string> SessionManager::usernameForToken(const string& token) {
+optional<string> SessionManager::usernameFromToken(const string& token) {
     lock_guard<mutex> lock(mutex_);
     auto it = tokenToUser_.find(token);
     if (it == tokenToUser_.end()) {
         return std::nullopt;
     }
     return it->second;
+}
+
+optional<string> SessionManager::usernameFromRequest(const crow::request& req) {
+    auto authHeader = req.get_header_value("Authorization");
+    if (authHeader.size() <= 7 || authHeader.substr(0, 7) != "Bearer ") {
+        return std::nullopt;
+    }
+    auto token = authHeader.substr(7);
+    if (token.empty()) {
+        return std::nullopt;
+    }
+    return usernameFromToken(token);
 }
 
 void SessionManager::revokeToken(const string& token) {

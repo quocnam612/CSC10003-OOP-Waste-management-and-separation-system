@@ -67,4 +67,31 @@ class SettingsApi {
           : 'Không thể đổi mật khẩu (${response.statusCode})',
     );
   }
+
+  static Future<List<Map<String, dynamic>>> fetchRegions({String? token}) async {
+    final response = await http.get(
+      _uri('/api/regions'),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        final regions = decoded['regions'];
+        if (regions is List) {
+          return regions
+              .whereType<Map<dynamic, dynamic>>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
+      }
+      return [];
+    }
+
+    throw Exception(
+      response.body.isNotEmpty
+          ? response.body
+          : 'Không thể tải danh sách khu vực (${response.statusCode})',
+    );
+  }
 }

@@ -4,6 +4,7 @@ import 'package:ui/screens/auth_screen.dart';
 
 import 'package:ui/components/model/menu_item_model.dart';
 import 'package:ui/components/home_screen/user/feedback_panel.dart';
+import 'package:ui/components/home_screen/user/service_registration_panel.dart';
 import 'package:ui/components/home_screen/shared/settings_panel.dart';
 import 'package:ui/utils/user_data_utils.dart';
 
@@ -45,6 +46,7 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
 
   final List<MenuItemModel> _residentMenu = const [
     MenuItemModel(id: 'home', title: 'Trang chủ', icon: Icons.home),
+    MenuItemModel(id: 'service', title: 'Đăng ký dịch vụ', icon: Icons.assignment_add),
     MenuItemModel(id: 'feedback', title: 'Gửi phản hồi', icon: Icons.rate_review),
   ];
 
@@ -73,7 +75,16 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
         return const DefaultDashboardBody();
       
       case 'feedback':
-        return const FeedbackPanel();
+        return FeedbackPanel(
+          authToken: widget.authToken,
+          userRegion: _userRegion,
+        );
+      
+      case 'service':
+        return ServiceRegistrationPanel(
+          userRegion: _userRegion,
+          authToken: widget.authToken,
+        );
         
       case 'setting':
         return AccountSettingsPanel(
@@ -98,8 +109,21 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    String title;
+    switch (_currentView) {
+      case 'service':
+        title = 'Đăng Ký Dịch Vụ';
+        break;
+      case 'feedback':
+        title = 'Gửi Phản Hồi';
+        break;
+      default:
+        title = 'Trang Chủ Cư Dân';
+        break;
+    }
+
     return DashboardLayout(
-      title: _currentView == 'feedback' ? 'Gửi Phản Hồi' : 'Trang Chủ Cư Dân',
+      title: title,
       
       userName: _userName,
       userRole: _userRole,

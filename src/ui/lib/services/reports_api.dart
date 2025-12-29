@@ -1,0 +1,43 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+class ReportsApi {
+  static const String _baseUrl =
+      String.fromEnvironment('API_URL', defaultValue: 'http://localhost:5000');
+
+  static Uri _uri(String path) => Uri.parse('$_baseUrl$path');
+
+  static Map<String, String> _headers(String? token) {
+    final headers = {'Content-Type': 'application/json'};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return headers;
+  }
+
+  static Future<void> createReport({
+    required String title,
+    required String content,
+    required int type,
+    String? token,
+  }) async {
+    final response = await http.post(
+      _uri('/api/reports'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'title': title,
+        'content': content,
+        'type': type,
+      }),
+    );
+
+    if (response.statusCode == 201) return;
+
+    throw Exception(
+      response.body.isNotEmpty
+          ? response.body
+          : 'Không thể gửi phản hồi (${response.statusCode})',
+    );
+  }
+}
