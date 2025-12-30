@@ -7,4 +7,5 @@ public:
     static mongocxx::collection users();
     static mongocxx::collection regions();
     static mongocxx::collection reports();
+    static mongocxx::collection services();
 };

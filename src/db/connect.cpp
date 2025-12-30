@@ -15,3 +15,7 @@ mongocxx::collection MongoConnection::regions() {
 mongocxx::collection MongoConnection::reports() {
     return client["green_route"]["reports"];
 }
+
+mongocxx::collection MongoConnection::services() {
+    return client["green_route"]["services"];
+}
