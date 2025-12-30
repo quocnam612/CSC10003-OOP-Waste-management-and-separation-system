@@ -51,3 +51,65 @@ expected<bool, string> ReportService::createReport(
 
     return true;
 }
+
+expected<std::vector<bsoncxx::document::value>, string> ReportService::getReportsForManagerRegion(
+    const string& username
+) {
+    auto user = UserRepository::findByUsername(username);
+    if (!user) {
+        return unexpected("User not found");
+    }
+
+    auto view = user->view();
+    int region = 0;
+    if (auto regionElement = view["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (region <= 0) {
+        return unexpected("Manager region invalid");
+    }
+
+    return ReportRepository::findReportsByRegion(region);
+}
+
+expected<bool, string> ReportService::markResolved(
+    const string& username,
+    const string& reportId
+) {
+    auto manager = UserRepository::findByUsername(username);
+    if (!manager) {
+        return unexpected("User not found");
+    }
+
+    auto view = manager->view();
+    int region = 0;
+    if (auto regionElement = view["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (region <= 0) {
+        return unexpected("Manager region invalid");
+    }
+
+    bsoncxx::oid oid;
+    try {
+        oid = bsoncxx::oid(reportId);
+    } catch (const std::exception&) {
+        return unexpected("Invalid report id");
+    }
+
+    if (!ReportRepository::markResolved(oid, region)) {
+        return unexpected("Report not found");
+    }
+
+    return true;
+}

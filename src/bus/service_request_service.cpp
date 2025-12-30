@@ -62,3 +62,48 @@ expected<bool, string> ServiceRequestService::createRequest(
 
     return true;
 }
+
+expected<std::vector<bsoncxx::document::value>, string> ServiceRequestService::getRequestsForUser(
+    const string& username
+) {
+    auto user = UserRepository::findByUsername(username);
+    if (!user) {
+        return unexpected("User not found");
+    }
+
+    auto userView = user->view();
+    if (!userView["_id"] || userView["_id"].type() != bsoncxx::type::k_oid) {
+        return unexpected("User record invalid");
+    }
+
+    auto userId = userView["_id"].get_oid().value;
+    return ServiceRepository::findServicesByUserId(userId);
+}
+
+expected<bool, string> ServiceRequestService::cancelRequest(
+    const string& username,
+    const string& serviceId
+) {
+    auto user = UserRepository::findByUsername(username);
+    if (!user) {
+        return unexpected("User not found");
+    }
+
+    auto userView = user->view();
+    if (!userView["_id"] || userView["_id"].type() != bsoncxx::type::k_oid) {
+        return unexpected("User record invalid");
+    }
+
+    bsoncxx::oid oid;
+    try {
+        oid = bsoncxx::oid(serviceId);
+    } catch (const std::exception&) {
+        return unexpected("Invalid service id");
+    }
+
+    if (!ServiceRepository::deleteService(oid, userView["_id"].get_oid().value)) {
+        return unexpected("Service request not found");
+    }
+
+    return true;
+}

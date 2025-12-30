@@ -3,6 +3,7 @@
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/helpers.hpp>
 #include <chrono>
+#include <mongocxx/options/find.hpp>
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
@@ -60,4 +61,21 @@ bool UserRepository::updatePasswordHash(const std::string& username, const std::
     );
 
     return result && result->modified_count() > 0;
+}
+
+std::vector<bsoncxx::document::value> UserRepository::findUsersByRegionAndRole(int region, int role) {
+    mongocxx::options::find options;
+    options.sort(document{} << "created_at" << -1 << finalize);
+
+    auto cursor = MongoConnection::users().find(
+        document{} << "region" << region << "role" << role << finalize,
+        options
+    );
+
+    std::vector<bsoncxx::document::value> users;
+    for (auto&& doc : cursor) {
+        users.emplace_back(bsoncxx::document::value(doc));
+    }
+
+    return users;
 }

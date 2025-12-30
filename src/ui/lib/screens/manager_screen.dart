@@ -4,11 +4,17 @@ import '../../screens/auth_screen.dart';
 
 import 'package:ui/components/model/menu_item_model.dart';
 import 'package:ui/components/model/customer_model.dart';
+import 'package:ui/components/model/report_model.dart';
+import 'package:ui/components/model/worker_model.dart';
 
 import 'package:ui/components/home_screen/manager/customer_panel.dart';
-import 'package:ui/components/home_screen/manager/customer_form.dart';
+import 'package:ui/components/home_screen/manager/reports_panel.dart';
+import 'package:ui/components/home_screen/manager/worker_panel.dart';
 import 'package:ui/components/home_screen/shared/settings_panel.dart';
 import 'package:ui/utils/user_data_utils.dart';
+import 'package:ui/services/customer_api.dart';
+import 'package:ui/services/reports_api.dart';
+import 'package:ui/services/worker_api.dart';
 
 class ManagerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -44,22 +50,40 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         fallback: '---');
     _managerRegion =
         UserDataUtils.intField(widget.userData, 'region', fallback: 0);
+    _loadCustomers();
+    _loadWorkers();
+    _loadReports();
+  }
+
+  @override
+  void didUpdateWidget(covariant ManagerDashboard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.authToken != widget.authToken) {
+      _loadCustomers();
+      _loadWorkers();
+      _loadReports();
+    }
   }
 
   final List<MenuItemModel> _managerMenu = const [
     MenuItemModel(id: 'home', title: 'Trang chủ', icon: Icons.home),
     MenuItemModel(id: 'customer', title: 'Khách hàng', icon: Icons.people),
     MenuItemModel(id: 'manage', title: 'Quản lí', icon: Icons.manage_accounts),
-    MenuItemModel(id: 'request', title: 'Yêu cầu', icon: Icons.assignment),
+    MenuItemModel(id: 'report', title: 'Phản ánh', icon: Icons.assignment),
     MenuItemModel(id: 'task', title: 'Công việc', icon: Icons.task_alt),
   ];
 
   // --- B. DỮ LIỆU KHÁCH HÀNG ---
-  final List<CustomerModel> _customers = [
-    CustomerModel(id: '1', fullName: 'Nguyễn Văn A', username: 'nguyenvana', phone: '0901234567', area: 'Quận 1', createdDate: '20/12/2025', isActive: true),
-    CustomerModel(id: '2', fullName: 'Trần Thị B', username: 'tranthib', phone: '0912345678', area: 'Quận 3', createdDate: '19/12/2025', isActive: false),
-    CustomerModel(id: '3', fullName: 'Lê Văn C', username: 'levanc', phone: '0987654321', area: 'Bình Thạnh', createdDate: '18/12/2025', isActive: true),
-  ];
+  List<CustomerModel> _customers = [];
+  bool _isCustomersLoading = false;
+  String? _customersError;
+  List<WorkerModel> _workers = [];
+  bool _isWorkersLoading = false;
+  String? _workersError;
+  List<ReportModel> _reports = [];
+  bool _isReportsLoading = false;
+  String? _reportsError;
+  String? _resolvingReportId;
 
   // --- C. CÁC HÀM XỬ LÝ ---
 
@@ -72,6 +96,130 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     }
   }
 
+  Future<void> _loadCustomers() async {
+    if (widget.authToken.isEmpty) {
+      setState(() {
+        _customers = [];
+        _customersError = 'Phiên đăng nhập không hợp lệ.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isCustomersLoading = true;
+      _customersError = null;
+    });
+
+    try {
+      final raw = await CustomerApi.fetchCustomers(token: widget.authToken);
+      final parsed = raw
+          .map(CustomerModel.fromJson)
+          .where((customer) => _managerRegion <= 0 || customer.region == _managerRegion)
+          .toList();
+      if (!mounted) return;
+      setState(() => _customers = parsed);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _customersError = error.toString();
+        _customers = [];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isCustomersLoading = false);
+    }
+  }
+
+  Future<void> _loadWorkers() async {
+    if (widget.authToken.isEmpty) {
+      setState(() {
+        _workers = [];
+        _workersError = 'Phiên đăng nhập không hợp lệ.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isWorkersLoading = true;
+      _workersError = null;
+    });
+
+    try {
+      final raw = await WorkerApi.fetchWorkers(token: widget.authToken);
+      final parsed = raw
+          .map(WorkerModel.fromJson)
+          .where((worker) => _managerRegion <= 0 || worker.region == _managerRegion)
+          .toList();
+      if (!mounted) return;
+      setState(() => _workers = parsed);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _workersError = error.toString();
+        _workers = [];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isWorkersLoading = false);
+    }
+  }
+
+  Future<void> _loadReports() async {
+    if (widget.authToken.isEmpty) {
+      setState(() {
+        _reports = [];
+        _reportsError = 'Phiên đăng nhập không hợp lệ.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isReportsLoading = true;
+      _reportsError = null;
+    });
+
+    try {
+      final raw = await ReportsApi.fetchReports(token: widget.authToken);
+      final parsed = raw.map(ReportModel.fromJson).toList();
+      if (!mounted) return;
+      setState(() => _reports = parsed);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _reportsError = error.toString();
+        _reports = [];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isReportsLoading = false);
+    }
+  }
+
+  Future<void> _handleResolveReport(String reportId) async {
+    if (reportId.isEmpty) {
+      _showSnack('Không xác định được phản ánh để cập nhật.', isError: true);
+      return;
+    }
+    if (widget.authToken.isEmpty) {
+      _showSnack('Phiên đăng nhập không hợp lệ.', isError: true);
+      return;
+    }
+
+    setState(() => _resolvingReportId = reportId);
+    try {
+      await ReportsApi.resolveReport(reportId: reportId, token: widget.authToken);
+      if (!mounted) return;
+      _showSnack('Đã cập nhật trạng thái phản ánh.');
+      await _loadReports();
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Không thể cập nhật phản ánh: $error', isError: true);
+    } finally {
+      if (!mounted) return;
+      setState(() => _resolvingReportId = null);
+    }
+  }
+
   void _performLogout() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const AuthScreen()),
@@ -79,42 +227,14 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     );
   }
 
-  void _handleDeleteCustomer(String id) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận xoá'),
-        content: const Text('Bạn có chắc chắn muốn xoá khách hàng này không?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Huỷ')),
-          TextButton(
-            onPressed: () {
-              setState(() => _customers.removeWhere((c) => c.id == id));
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xoá thành công')));
-            },
-            child: const Text('Xoá', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleCreateCustomer() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext ctx) {
-        return CustomerFormDialog(
-          onSubmit: (newCustomer) {
-            setState(() => _customers.insert(0, newCustomer));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Đã thêm mới: ${newCustomer.fullName}'), backgroundColor: Colors.green),
-            );
-          },
-        );
-      },
-    );
+  void _showSnack(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : null,
+      ));
   }
 
   // --- D. BUILD BODY ---
@@ -127,12 +247,28 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
       case 'customer':
         return CustomerPanel(
           customers: _customers,
-          onDelete: _handleDeleteCustomer,
-          onCreate: _handleCreateCustomer,
+          isLoading: _isCustomersLoading,
+          errorMessage: _customersError,
+          onRefresh: _loadCustomers,
         );
-        
+
+      case 'report':
+        return ReportsPanel(
+          reports: _reports,
+          isLoading: _isReportsLoading,
+          errorMessage: _reportsError,
+          onRefresh: _loadReports,
+          onResolve: _handleResolveReport,
+          resolvingReportId: _resolvingReportId,
+        );
+
       case 'manage':
-        return const Center(child: Text("Màn hình Quản lý (Đang phát triển)"));
+        return WorkerPanel(
+          workers: _workers,
+          isLoading: _isWorkersLoading,
+          errorMessage: _workersError,
+          onRefresh: _loadWorkers,
+        );
       case 'request':
         return const Center(child: Text("Màn hình Yêu cầu (Đang phát triển)"));
       case 'task':
@@ -161,9 +297,27 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   @override
   Widget build(BuildContext context) {
     // QUAN TRỌNG: Không dùng Scaffold nữa, dùng DashboardLayout
+    String title;
+    switch (_currentView) {
+      case 'customer':
+        title = 'Quản lý Khách Hàng';
+        break;
+      case 'manage':
+        title = 'Quản lý Nhân viên';
+        break;
+      case 'report':
+        title = 'Phản ánh khu vực';
+        break;
+      case 'home':
+        title = 'Dashboard';
+        break;
+      default:
+        title = 'Quản Lý';
+        break;
+    }
+
     return DashboardLayout(
-      title: _currentView == 'home' ? 'Dashboard' : 
-             _currentView == 'customer' ? 'Quản lý Khách Hàng' : 'Quản Lý',
+      title: title,
       
       // Dữ liệu truyền vào Layout
       userName: _managerName,

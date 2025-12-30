@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:ui/components/model/customer_model.dart';
+import 'package:ui/components/model/worker_model.dart';
 
-class CustomerPanel extends StatelessWidget {
-  final List<CustomerModel> customers;
+class WorkerPanel extends StatelessWidget {
+  final List<WorkerModel> workers;
   final bool isLoading;
   final String? errorMessage;
   final Future<void> Function()? onRefresh;
 
-  const CustomerPanel({
+  const WorkerPanel({
     super.key,
-    required this.customers,
+    required this.workers,
     this.isLoading = false,
     this.errorMessage,
     this.onRefresh,
@@ -45,19 +45,19 @@ class CustomerPanel extends StatelessWidget {
           ],
         ),
       );
-    } else if (customers.isEmpty) {
+    } else if (workers.isEmpty) {
       content = const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
-        child: Center(child: Text('Chưa có khách hàng nào trong khu vực này.')),
+        child: Center(child: Text('Chưa có nhân viên nào trong khu vực này.')),
       );
     } else {
       content = Column(
         children: [
           _buildHeaderRow(primaryColor),
           const Divider(height: 1),
-          for (int i = 0; i < customers.length; i++) ...[
-            _buildDataRow(customers[i], primaryColor),
-            if (i != customers.length - 1) const Divider(height: 1),
+          for (int i = 0; i < workers.length; i++) ...[
+            _buildDataRow(workers[i], primaryColor),
+            if (i != workers.length - 1) const Divider(height: 1),
           ],
         ],
       );
@@ -81,7 +81,7 @@ class CustomerPanel extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Danh sách khách hàng',
+                    'Danh sách nhân viên',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
@@ -97,22 +97,6 @@ class CustomerPanel extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-  Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildDataCell(Widget child, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: child,
     );
   }
 
@@ -135,7 +119,24 @@ class CustomerPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildDataRow(CustomerModel customer, Color primaryColor) {
+  Widget _buildHeaderCell(String text, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildDataCell(Widget child, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: child,
+    );
+  }
+
+  Widget _buildDataRow(WorkerModel worker, Color primaryColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Row(
@@ -147,14 +148,14 @@ class CustomerPanel extends StatelessWidget {
                   radius: 18,
                   backgroundColor: Colors.grey[200],
                   child: Text(
-                    customer.fullName.isNotEmpty ? customer.fullName[0].toUpperCase() : '?',
+                    worker.fullName.isNotEmpty ? worker.fullName[0].toUpperCase() : '?',
                     style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    customer.fullName,
+                    worker.fullName,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -163,23 +164,35 @@ class CustomerPanel extends StatelessWidget {
             ),
             flex: 3,
           ),
-          _buildDataCell(Text(customer.username), flex: 2),
-          _buildDataCell(Text(customer.phone), flex: 2),
-          _buildDataCell(Text(customer.createdDate), flex: 2),
+          _buildDataCell(Text(worker.username), flex: 2),
+          _buildDataCell(Text(worker.phone), flex: 2),
+          _buildDataCell(
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                worker.createdDate,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+            flex: 2,
+          ),
           _buildDataCell(
             Align(
               alignment: Alignment.centerLeft,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: customer.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  color: worker.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: customer.isActive ? Colors.green : Colors.red, width: 0.5),
+                  border: Border.all(
+                    color: worker.isActive ? Colors.green : Colors.red,
+                    width: 0.5,
+                  ),
                 ),
                 child: Text(
-                  customer.isActive ? 'Hoạt động' : 'Tạm dừng',
+                  worker.isActive ? 'Hoạt động' : 'Tạm dừng',
                   style: TextStyle(
-                    color: customer.isActive ? Colors.green[700] : Colors.red[700],
+                    color: worker.isActive ? Colors.green[700] : Colors.red[700],
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),

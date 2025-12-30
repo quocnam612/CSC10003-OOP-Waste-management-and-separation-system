@@ -37,3 +37,57 @@ expected<bool, string> UserService::changePassword(const string& username, const
 
     return true;
 }
+
+expected<std::vector<bsoncxx::document::value>, string> UserService::getResidentsByManagerRegion(
+    const string& managerUsername
+) {
+    auto manager = UserRepository::findByUsername(managerUsername);
+    if (!manager) {
+        return unexpected("User not found");
+    }
+
+    auto view = manager->view();
+    if (!view["region"]) {
+        return unexpected("Manager region not configured");
+    }
+
+    int region = 0;
+    auto regionElement = view["region"];
+    if (regionElement.type() == bsoncxx::type::k_int32) {
+        region = regionElement.get_int32().value;
+    } else if (regionElement.type() == bsoncxx::type::k_int64) {
+        region = static_cast<int>(regionElement.get_int64().value);
+    }
+
+    if (region <= 0) {
+        return unexpected("Manager region invalid");
+    }
+
+    auto residents = UserRepository::findUsersByRegionAndRole(region, 1);
+    return residents;
+}
+
+expected<std::vector<bsoncxx::document::value>, string> UserService::getWorkersByManagerRegion(
+    const string& managerUsername
+) {
+    auto manager = UserRepository::findByUsername(managerUsername);
+    if (!manager) {
+        return unexpected("User not found");
+    }
+
+    auto view = manager->view();
+    int region = 0;
+    if (auto regionElement = view["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (region <= 0) {
+        return unexpected("Manager region invalid");
+    }
+
+    return UserRepository::findUsersByRegionAndRole(region, 2);
+}

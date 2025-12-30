@@ -8,4 +8,7 @@ public:
     static mongocxx::collection regions();
     static mongocxx::collection reports();
     static mongocxx::collection services();
+
+private:
+    static mongocxx::client& client();
 };

@@ -40,4 +40,58 @@ class ReportsApi {
           : 'Không thể gửi phản hồi (${response.statusCode})',
     );
   }
+
+  static Future<List<Map<String, dynamic>>> fetchReports({String? token}) async {
+    final response = await http.get(
+      _uri('/api/reports'),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        response.body.isNotEmpty
+            ? response.body
+            : 'Không thể tải danh sách phản ánh (${response.statusCode})',
+      );
+    }
+
+    if (response.body.isEmpty) return const [];
+
+    final decoded = jsonDecode(response.body);
+    dynamic rawReports;
+    if (decoded is Map<String, dynamic>) {
+      rawReports = decoded['reports'];
+    } else if (decoded is List) {
+      rawReports = decoded;
+    }
+
+    if (rawReports is List) {
+      return rawReports
+          .whereType<Map>()
+          .map<Map<String, dynamic>>(
+            (item) => Map<String, dynamic>.from(item),
+          )
+          .toList(growable: false);
+    }
+
+    return const [];
+  }
+
+  static Future<void> resolveReport({
+    required String reportId,
+    String? token,
+  }) async {
+    final response = await http.put(
+      _uri('/api/reports/$reportId/resolve'),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode == 204) return;
+
+    throw Exception(
+      response.body.isNotEmpty
+          ? response.body
+          : 'Không thể cập nhật trạng thái (${response.statusCode})',
+    );
+  }
 }

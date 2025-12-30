@@ -1,6 +1,8 @@
 #include "user_controller.h"
 #include "../bus/user_service.h"
 #include "../bus/session_manager.h"
+#include <bsoncxx/types.hpp>
+#include <chrono>
 
 void UserController::registerRoutes(crow::SimpleApp& app) {
     auto updateProfileHandler = [](const crow::request& req) {
@@ -55,4 +57,155 @@ void UserController::registerRoutes(crow::SimpleApp& app) {
     };
 
     CROW_ROUTE(app, "/api/user/change-password").methods("PUT"_method)(changePasswordHandler);
+
+    auto listCustomersHandler = [](const crow::request& req) {
+        auto username = SessionManager::instance().usernameFromRequest(req);
+        if (!username) {
+            return crow::response(401, "Unauthorized");
+        }
+
+        auto result = UserService::getResidentsByManagerRegion(*username);
+        if (!result.has_value()) {
+            return crow::response(400, result.error());
+        }
+
+        crow::json::wvalue response;
+        crow::json::wvalue::list list;
+        list.reserve(result->size());
+
+        for (const auto& doc : result.value()) {
+            auto view = doc.view();
+            crow::json::wvalue item;
+
+            if (auto idElement = view["_id"]; idElement && idElement.type() == bsoncxx::type::k_oid) {
+                item["id"] = idElement.get_oid().value.to_string();
+            }
+
+            if (auto nameElement = view["name"]; nameElement && nameElement.type() == bsoncxx::type::k_string) {
+                item["name"] = std::string(nameElement.get_string().value);
+            } else {
+                item["name"] = "";
+            }
+
+            if (auto usernameElement = view["username"]; usernameElement && usernameElement.type() == bsoncxx::type::k_string) {
+                item["username"] = std::string(usernameElement.get_string().value);
+            } else {
+                item["username"] = "";
+            }
+
+            if (auto phoneElement = view["phone"]; phoneElement && phoneElement.type() == bsoncxx::type::k_string) {
+                item["phone"] = std::string(phoneElement.get_string().value);
+            } else {
+                item["phone"] = "";
+            }
+
+            int region = 0;
+            if (auto regionElement = view["region"]; regionElement) {
+                if (regionElement.type() == bsoncxx::type::k_int32) {
+                    region = regionElement.get_int32().value;
+                } else if (regionElement.type() == bsoncxx::type::k_int64) {
+                    region = static_cast<int>(regionElement.get_int64().value);
+                }
+            }
+            item["region"] = region;
+
+            bool isActive = true;
+            if (auto activeElement = view["is_active"]; activeElement && activeElement.type() == bsoncxx::type::k_bool) {
+                isActive = activeElement.get_bool().value;
+            }
+            item["is_active"] = isActive;
+
+            long long createdAtMs = 0;
+            if (auto createdAt = view["created_at"]; createdAt && createdAt.type() == bsoncxx::type::k_date) {
+                auto raw = createdAt.get_date().value;
+                auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(raw);
+                createdAtMs = ms.count();
+            }
+            item["created_at"] = createdAtMs;
+
+            list.emplace_back(std::move(item));
+        }
+
+        response["customers"] = crow::json::wvalue(list);
+        crow::response resp;
+        resp.code = 200;
+        resp.set_header("Content-Type", "application/json");
+        resp.body = response.dump();
+        return resp;
+    };
+
+    auto listWorkersHandler = [](const crow::request& req) {
+        auto username = SessionManager::instance().usernameFromRequest(req);
+        if (!username) {
+            return crow::response(401, "Unauthorized");
+        }
+
+        auto result = UserService::getWorkersByManagerRegion(*username);
+        if (!result.has_value()) {
+            return crow::response(400, result.error());
+        }
+
+        crow::json::wvalue response;
+        crow::json::wvalue::list list;
+        list.reserve(result->size());
+
+        for (const auto& doc : result.value()) {
+            auto view = doc.view();
+            crow::json::wvalue item;
+
+            if (auto idElement = view["_id"]; idElement && idElement.type() == bsoncxx::type::k_oid) {
+                item["id"] = idElement.get_oid().value.to_string();
+            }
+
+            if (auto nameElement = view["name"]; nameElement && nameElement.type() == bsoncxx::type::k_string) {
+                item["name"] = std::string(nameElement.get_string().value);
+            } else {
+                item["name"] = "";
+            }
+
+            if (auto usernameElement = view["username"]; usernameElement && usernameElement.type() == bsoncxx::type::k_string) {
+                item["username"] = std::string(usernameElement.get_string().value);
+            } else {
+                item["username"] = "";
+            }
+
+            if (auto phoneElement = view["phone"]; phoneElement && phoneElement.type() == bsoncxx::type::k_string) {
+                item["phone"] = std::string(phoneElement.get_string().value);
+            } else {
+                item["phone"] = "";
+            }
+
+            bool isActive = true;
+            if (auto activeElement = view["is_active"]; activeElement && activeElement.type() == bsoncxx::type::k_bool) {
+                isActive = activeElement.get_bool().value;
+            }
+            item["is_active"] = isActive;
+
+            int region = 0;
+            if (auto regionElement = view["region"]; regionElement) {
+                if (regionElement.type() == bsoncxx::type::k_int32) {
+                    region = regionElement.get_int32().value;
+                } else if (regionElement.type() == bsoncxx::type::k_int64) {
+                    region = static_cast<int>(regionElement.get_int64().value);
+                }
+            }
+            item["region"] = region;
+
+            long long createdAtMs = 0;
+            if (auto createdAt = view["created_at"]; createdAt && createdAt.type() == bsoncxx::type::k_date) {
+                auto raw = createdAt.get_date().value;
+                auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(raw);
+                createdAtMs = ms.count();
+            }
+            item["created_at"] = createdAtMs;
+
+            list.emplace_back(std::move(item));
+        }
+
+        response["workers"] = crow::json::wvalue(list);
+        return crow::response(response);
+    };
+
+    CROW_ROUTE(app, "/api/customers").methods("GET"_method)(listCustomersHandler);
+    CROW_ROUTE(app, "/api/workers").methods("GET"_method)(listWorkersHandler);
 }

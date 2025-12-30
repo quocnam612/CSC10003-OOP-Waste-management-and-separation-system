@@ -25,7 +25,10 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
   bool _isSubmitting = false;
   bool _isDistrictsLoading = false;
   String? _districtsError;
-  List<String> _districts = const [];
+  List<String> _districts = const <String>[];
+  bool _isServicesLoading = false;
+  String? _servicesError;
+  List<Map<String, dynamic>> _registeredServices = const <Map<String, dynamic>>[];
 
   final List<String> _services = const [
     'Thu gom rác tại nhà',
@@ -40,20 +43,26 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
     } else {
       _districtsError = 'Vui lòng cập nhật phường trong phần Cài đặt.';
     }
+    _loadRegisteredServices();
   }
 
   @override
   void didUpdateWidget(covariant ServiceRegistrationPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.userRegion == widget.userRegion) return;
-    if (widget.userRegion > 0) {
-      _loadDistricts();
-    } else {
-      setState(() {
-        _districts = const [];
-        _selectedDistrict = null;
-        _districtsError = 'Vui lòng cập nhật phường trong phần Cài đặt.';
-      });
+    if (oldWidget.userRegion != widget.userRegion) {
+      if (widget.userRegion > 0) {
+        _loadDistricts();
+      } else {
+        setState(() {
+          _districts = const <String>[];
+          _selectedDistrict = null;
+          _districtsError = 'Vui lòng cập nhật phường trong phần Cài đặt.';
+        });
+      }
+    }
+
+    if (oldWidget.authToken != widget.authToken) {
+      _loadRegisteredServices();
     }
   }
 
@@ -105,6 +114,7 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
       });
       _addressController.clear();
       _noteController.clear();
+      await _loadRegisteredServices();
     } catch (error) {
       if (!mounted) return;
       _showSnack('Không thể đăng ký dịch vụ: $error', isError: true);
@@ -118,7 +128,7 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
   Future<void> _loadDistricts() async {
     if (widget.userRegion <= 0) {
       setState(() {
-        _districts = const [];
+        _districts = const <String>[];
         _selectedDistrict = null;
         _districtsError = 'Vui lòng cập nhật phường trong phần Cài đặt.';
         _isDistrictsLoading = false;
@@ -148,7 +158,7 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
         }
       }
 
-      List<String> districtsList = const [];
+      List<String> districtsList = const <String>[];
       String? loadError;
 
       if (matchedRegion == null) {
@@ -186,6 +196,42 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
     }
   }
 
+  Future<void> _loadRegisteredServices() async {
+    final token = widget.authToken;
+    if (token == null || token.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _registeredServices = const <Map<String, dynamic>>[];
+        _servicesError = 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
+        _isServicesLoading = false;
+      });
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isServicesLoading = true;
+      _servicesError = null;
+    });
+
+    try {
+      final services = await ServiceRequestApi.fetchRequests(token: token);
+      if (!mounted) return;
+      setState(() {
+        _registeredServices = services;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _servicesError = 'Không thể tải danh sách dịch vụ: $error';
+        _registeredServices = const <Map<String, dynamic>>[];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isServicesLoading = false);
+    }
+  }
+
   void _showSnack(String message, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -196,6 +242,185 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
       ));
   }
 
+  Widget _buildRegisteredServicesCard() {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.history, color: primary),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Dịch vụ đã đăng ký', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Theo dõi các yêu cầu dịch vụ bạn đã gửi.'),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Tải lại danh sách',
+                  onPressed: _isServicesLoading ? null : () => _loadRegisteredServices(),
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (_isServicesLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_servicesError != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _servicesError!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _loadRegisteredServices(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Thử lại'),
+                  ),
+                ],
+              )
+            else if (_registeredServices.isEmpty)
+              const Text('Bạn chưa đăng ký dịch vụ nào.')
+            else
+              Column(
+                children: [
+                  for (int i = 0; i < _registeredServices.length; i++)
+                    Padding(
+                      padding: EdgeInsets.only(top: i == 0 ? 0 : 12),
+                      child: _buildServiceItem(_registeredServices[i]),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceItem(Map<String, dynamic> service) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final dynamic regionValue = service['region'];
+    final String regionLabel = regionValue is num && regionValue > 0
+        ? 'Khu vực ${regionValue.toInt()}'
+        : 'Khu vực --';
+    final String serviceName = (() {
+      final dynamic raw = service['service'];
+      if (raw is String && raw.trim().isNotEmpty) return raw.trim();
+      return _services.isNotEmpty ? _services.first : 'Dịch vụ';
+    })();
+
+    final String district = (service['district'] ?? '').toString().trim();
+    final String address = (service['address'] ?? '').toString().trim();
+    final String note = (service['note'] ?? '').toString().trim();
+    final String createdAt = _formatTimestamp(service['created_at']);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.recycling, color: primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(serviceName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(regionLabel, style: TextStyle(color: Colors.grey.shade600)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: _isSubmitting
+                    ? null
+                    : () => _handleCancel(service['id']?.toString() ?? ''),
+                icon: Icon(Icons.close, color: Colors.red.shade600),
+                label: Text(
+                  'Hủy đăng ký',
+                  style: TextStyle(
+                    color: Colors.red.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildInfoRow(Icons.location_city, 'Khu phố', district.isEmpty ? '---' : district),
+          _buildInfoRow(Icons.home, 'Địa chỉ', address.isEmpty ? '---' : address),
+          if (note.isNotEmpty)
+            _buildInfoRow(Icons.sticky_note_2, 'Ghi chú', note),
+          _buildInfoRow(Icons.schedule, 'Đăng ký lúc', createdAt),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: Colors.grey.shade600),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade800),
+                children: [
+                  TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTimestamp(dynamic timestamp) {
+    int? millis;
+    if (timestamp is int) {
+      millis = timestamp;
+    } else if (timestamp is double) {
+      millis = timestamp.toInt();
+    } else if (timestamp is String) {
+      millis = int.tryParse(timestamp);
+    }
+
+    if (millis == null || millis <= 0) return '--';
+
+    final date = DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true).toLocal();
+    String twoDigits(int value) => value.toString().padLeft(2, '0');
+    final formattedDate = '${twoDigits(date.day)}/${twoDigits(date.month)}/${date.year}';
+    final formattedTime = '${twoDigits(date.hour)}:${twoDigits(date.minute)}';
+    return '$formattedDate $formattedTime';
+  }
+
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
@@ -203,6 +428,7 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
             padding: const EdgeInsets.all(20),
@@ -360,8 +586,37 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
               ),
             ),
           ),
+          const SizedBox(height: 24),
+          _buildRegisteredServicesCard(),
         ],
       ),
     );
+  }
+
+  Future<void> _handleCancel(String serviceId) async {
+    if (serviceId.isEmpty) {
+      _showSnack('Không xác định được dịch vụ để hủy.', isError: true);
+      return;
+    }
+
+    final token = widget.authToken;
+    if (token == null || token.isEmpty) {
+      _showSnack('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.', isError: true);
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ServiceRequestApi.cancelRequest(serviceId: serviceId, token: token);
+      if (!mounted) return;
+      _showSnack('Đã hủy dịch vụ thành công.');
+      await _loadRegisteredServices();
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Không thể hủy dịch vụ: $error', isError: true);
+    } finally {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+    }
   }
 }

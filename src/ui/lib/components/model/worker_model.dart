@@ -1,30 +1,30 @@
-class CustomerModel {
+class WorkerModel {
   final String id;
   final String fullName;
   final String username;
   final String phone;
-  final String createdDate;
   final int region;
-  final bool isActive; // true: Hoạt động, false: Tạm dừng
+  final String createdDate;
+  final bool isActive;
 
-  CustomerModel({
+  WorkerModel({
     required this.id,
     required this.fullName,
     required this.username,
     required this.phone,
-    required this.createdDate,
     required this.region,
+    required this.createdDate,
     required this.isActive,
   });
 
-  factory CustomerModel.fromJson(Map<String, dynamic> json) {
-    return CustomerModel(
+  factory WorkerModel.fromJson(Map<String, dynamic> json) {
+    return WorkerModel(
       id: (json['id'] ?? '').toString(),
       fullName: (json['name'] ?? '').toString(),
       username: (json['username'] ?? '').toString(),
       phone: (json['phone'] ?? '').toString(),
-      createdDate: _formatTimestamp(json['created_at']),
       region: json['region'] is num ? (json['region'] as num).toInt() : 0,
+      createdDate: _formatTimestamp(json['created_at']),
       isActive: json['is_active'] is bool ? json['is_active'] as bool : true,
     );
   }

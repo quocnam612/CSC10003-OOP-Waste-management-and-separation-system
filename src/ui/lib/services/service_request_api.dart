@@ -41,4 +41,57 @@ class ServiceRequestApi {
     );
   }
 
+  static Future<List<Map<String, dynamic>>> fetchRequests({String? token}) async {
+    final response = await http.get(
+      _uri('/api/services'),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        response.body.isNotEmpty
+            ? response.body
+            : 'Không thể tải danh sách dịch vụ (${response.statusCode})',
+      );
+    }
+
+    if (response.body.isEmpty) return const [];
+
+    final decoded = jsonDecode(response.body);
+    dynamic rawServices;
+    if (decoded is Map<String, dynamic>) {
+      rawServices = decoded['services'];
+    } else if (decoded is List) {
+      rawServices = decoded;
+    }
+
+    if (rawServices is List) {
+      return rawServices
+          .where((item) => item is Map)
+          .map<Map<String, dynamic>>(
+            (item) => Map<String, dynamic>.from(item as Map),
+          )
+          .toList(growable: false);
+    }
+
+    return const [];
+  }
+
+  static Future<void> cancelRequest({
+    required String serviceId,
+    String? token,
+  }) async {
+    final response = await http.delete(
+      _uri('/api/services/$serviceId'),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode == 204) return;
+
+    throw Exception(
+      response.body.isNotEmpty
+          ? response.body
+          : 'Không thể hủy dịch vụ (${response.statusCode})',
+    );
+  }
 }

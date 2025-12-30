@@ -17,8 +17,6 @@ class _CustomerFormDialogState extends State<CustomerFormDialog> {
   final _fullNameCtrl = TextEditingController();
   final _usernameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _areaCtrl = TextEditingController();
-  
   bool _isActive = true; // Mặc định là Hoạt động
 
   @override
@@ -26,7 +24,6 @@ class _CustomerFormDialogState extends State<CustomerFormDialog> {
     _fullNameCtrl.dispose();
     _usernameCtrl.dispose();
     _phoneCtrl.dispose();
-    _areaCtrl.dispose();
     super.dispose();
   }
 
@@ -42,8 +39,8 @@ class _CustomerFormDialogState extends State<CustomerFormDialog> {
         fullName: _fullNameCtrl.text,
         username: _usernameCtrl.text,
         phone: _phoneCtrl.text,
-        area: _areaCtrl.text,
         createdDate: currentDate,
+        region: 0,
         isActive: _isActive,
       );
 
@@ -82,12 +79,6 @@ class _CustomerFormDialogState extends State<CustomerFormDialog> {
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(labelText: 'Số điện thoại', prefixIcon: Icon(Icons.phone)),
                 validator: (value) => value == null || value.isEmpty ? 'Vui lòng nhập SĐT' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _areaCtrl,
-                decoration: const InputDecoration(labelText: 'Khu vực', prefixIcon: Icon(Icons.map)),
-                validator: (value) => value == null || value.isEmpty ? 'Vui lòng nhập khu vực' : null,
               ),
               const SizedBox(height: 16),
               // Switch trạng thái
