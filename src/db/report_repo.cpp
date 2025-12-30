@@ -30,14 +30,14 @@ std::vector<bsoncxx::document::value> ReportRepository::findReportsByRegion(int 
     return reports;
 }
 
-bool ReportRepository::markResolved(const bsoncxx::oid& reportId, int region) {
+bool ReportRepository::markResolved(const bsoncxx::oid& reportId, int region, bool resolved) {
     using bsoncxx::builder::stream::open_document;
     using bsoncxx::builder::stream::close_document;
 
     auto result = MongoConnection::reports().update_one(
         document{} << "_id" << reportId << "region" << region << finalize,
         document{} << "$set" << open_document
-            << "resolved" << true
+            << "resolved" << resolved
             << close_document << finalize
     );
 

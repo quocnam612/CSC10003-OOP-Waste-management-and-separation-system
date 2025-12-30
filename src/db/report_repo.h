@@ -9,6 +9,6 @@
 class ReportRepository {
 public:
     static bool insertReport(const bsoncxx::document::view_or_value& reportDoc);
-    static bool markResolved(const bsoncxx::oid& reportId, int region);
+    static bool markResolved(const bsoncxx::oid& reportId, int region, bool resolved = true);
     static std::vector<bsoncxx::document::value> findReportsByRegion(int region);
 };

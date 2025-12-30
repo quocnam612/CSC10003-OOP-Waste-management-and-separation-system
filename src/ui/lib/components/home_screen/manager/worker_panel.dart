@@ -6,6 +6,8 @@ class WorkerPanel extends StatelessWidget {
   final bool isLoading;
   final String? errorMessage;
   final Future<void> Function()? onRefresh;
+  final Future<void> Function(String id, bool nextStatus)? onToggleStatus;
+  final String? togglingUserId;
 
   const WorkerPanel({
     super.key,
@@ -13,6 +15,8 @@ class WorkerPanel extends StatelessWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRefresh,
+    this.onToggleStatus,
+    this.togglingUserId,
   });
 
   @override
@@ -179,29 +183,56 @@ class WorkerPanel extends StatelessWidget {
           _buildDataCell(
             Align(
               alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: worker.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: worker.isActive ? Colors.green : Colors.red,
-                    width: 0.5,
-                  ),
-                ),
-                child: Text(
-                  worker.isActive ? 'Hoạt động' : 'Tạm dừng',
-                  style: TextStyle(
-                    color: worker.isActive ? Colors.green[700] : Colors.red[700],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              child: _buildStatusBadge(
+                worker,
+                isUpdating: togglingUserId == worker.id,
               ),
             ),
             flex: 2,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(WorkerModel worker, {required bool isUpdating}) {
+    final isActive = worker.isActive;
+    final color = isActive ? Colors.green : Colors.red;
+    final label = isUpdating
+        ? 'Đang cập nhật...'
+        : (isActive ? 'Hoạt động' : 'Tạm dừng');
+    final canToggle = onToggleStatus != null && !isUpdating;
+
+    return MouseRegion(
+      cursor: canToggle ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTap: canToggle ? () => onToggleStatus!(worker.id, !isActive) : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: color,
+              width: 0.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.circle, size: 10, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color.shade700,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

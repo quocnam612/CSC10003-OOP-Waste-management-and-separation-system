@@ -79,3 +79,18 @@ std::vector<bsoncxx::document::value> UserRepository::findUsersByRegionAndRole(i
 
     return users;
 }
+
+bool UserRepository::updateActiveStatus(const bsoncxx::oid& userId, int region, bool isActive) {
+    using bsoncxx::builder::stream::open_document;
+    using bsoncxx::builder::stream::close_document;
+
+    auto result = MongoConnection::users().update_one(
+        document{} << "_id" << userId << "region" << region << finalize,
+        document{} << "$set" << open_document
+            << "is_active" << isActive
+            << "updated_at" << bsoncxx::types::b_date(std::chrono::system_clock::now())
+            << close_document << finalize
+    );
+
+    return result && result->modified_count() > 0;
+}

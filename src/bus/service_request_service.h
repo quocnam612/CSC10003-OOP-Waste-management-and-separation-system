@@ -23,6 +23,10 @@ public:
         const string& username
     );
 
+    static expected<std::vector<bsoncxx::document::value>, string> getRequestsForManagerRegion(
+        const string& username
+    );
+
     static expected<bool, string> cancelRequest(
         const string& username,
         const string& serviceId

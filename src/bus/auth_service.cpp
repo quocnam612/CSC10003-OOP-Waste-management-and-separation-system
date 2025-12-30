@@ -73,6 +73,12 @@ expected<bsoncxx::document::value, string> AuthService::loginUser(string usernam
         return unexpected("Wrong password");
     }
 
+    if (auto activeElement = view["is_active"]; activeElement && activeElement.type() == bsoncxx::type::k_bool) {
+        if (!activeElement.get_bool().value) {
+            return unexpected("Account is deactivated");
+        }
+    }
+
     // 4. Return the document (successful login)
     return *userDoc;
 }

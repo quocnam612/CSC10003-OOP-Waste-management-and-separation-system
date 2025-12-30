@@ -79,11 +79,13 @@ class ReportsApi {
 
   static Future<void> resolveReport({
     required String reportId,
+    required bool resolved,
     String? token,
   }) async {
     final response = await http.put(
       _uri('/api/reports/$reportId/resolve'),
       headers: _headers(token),
+      body: jsonEncode({'resolved': resolved}),
     );
 
     if (response.statusCode == 204) return;

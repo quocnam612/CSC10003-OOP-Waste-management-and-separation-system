@@ -6,6 +6,8 @@ class CustomerPanel extends StatelessWidget {
   final bool isLoading;
   final String? errorMessage;
   final Future<void> Function()? onRefresh;
+  final Future<void> Function(String id, bool nextStatus)? onToggleStatus;
+  final String? togglingUserId;
 
   const CustomerPanel({
     super.key,
@@ -13,6 +15,8 @@ class CustomerPanel extends StatelessWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRefresh,
+    this.onToggleStatus,
+    this.togglingUserId,
   });
 
   @override
@@ -169,26 +173,53 @@ class CustomerPanel extends StatelessWidget {
           _buildDataCell(
             Align(
               alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: customer.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: customer.isActive ? Colors.green : Colors.red, width: 0.5),
-                ),
-                child: Text(
-                  customer.isActive ? 'Hoạt động' : 'Tạm dừng',
-                  style: TextStyle(
-                    color: customer.isActive ? Colors.green[700] : Colors.red[700],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              child: _buildStatusBadge(
+                customer,
+                isUpdating: togglingUserId == customer.id,
               ),
             ),
             flex: 2,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(CustomerModel customer, {required bool isUpdating}) {
+    final isActive = customer.isActive;
+    final color = isActive ? Colors.green : Colors.red;
+    final label = isUpdating
+        ? 'Đang cập nhật...'
+        : (isActive ? 'Hoạt động' : 'Tạm dừng');
+    final canToggle = onToggleStatus != null && !isUpdating;
+
+    return MouseRegion(
+      cursor: canToggle ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTap: canToggle ? () => onToggleStatus!(customer.id, !isActive) : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color, width: 0.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.circle, size: 10, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color.shade700,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

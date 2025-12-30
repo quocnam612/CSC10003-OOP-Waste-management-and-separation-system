@@ -6,15 +6,19 @@ import 'package:ui/components/model/menu_item_model.dart';
 import 'package:ui/components/model/customer_model.dart';
 import 'package:ui/components/model/report_model.dart';
 import 'package:ui/components/model/worker_model.dart';
+import 'package:ui/components/model/service_request_model.dart';
 
 import 'package:ui/components/home_screen/manager/customer_panel.dart';
 import 'package:ui/components/home_screen/manager/reports_panel.dart';
 import 'package:ui/components/home_screen/manager/worker_panel.dart';
+import 'package:ui/components/home_screen/manager/task_panel.dart';
 import 'package:ui/components/home_screen/shared/settings_panel.dart';
 import 'package:ui/utils/user_data_utils.dart';
 import 'package:ui/services/customer_api.dart';
 import 'package:ui/services/reports_api.dart';
 import 'package:ui/services/worker_api.dart';
+import 'package:ui/services/service_request_api.dart';
+import 'package:ui/services/user_management_api.dart';
 
 class ManagerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -52,6 +56,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         UserDataUtils.intField(widget.userData, 'region', fallback: 0);
     _loadCustomers();
     _loadWorkers();
+    _loadRegionServices();
     _loadReports();
   }
 
@@ -61,6 +66,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     if (oldWidget.authToken != widget.authToken) {
       _loadCustomers();
       _loadWorkers();
+      _loadRegionServices();
       _loadReports();
     }
   }
@@ -80,10 +86,15 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   List<WorkerModel> _workers = [];
   bool _isWorkersLoading = false;
   String? _workersError;
+  List<ServiceRequestModel> _regionServices = [];
+  bool _isRegionServicesLoading = false;
+  String? _regionServicesError;
   List<ReportModel> _reports = [];
   bool _isReportsLoading = false;
   String? _reportsError;
   String? _resolvingReportId;
+  String? _togglingCustomerId;
+  String? _togglingWorkerId;
 
   // --- C. CÁC HÀM XỬ LÝ ---
 
@@ -164,6 +175,40 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     }
   }
 
+  Future<void> _loadRegionServices() async {
+    if (widget.authToken.isEmpty) {
+      setState(() {
+        _regionServices = [];
+        _regionServicesError = 'Phiên đăng nhập không hợp lệ.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isRegionServicesLoading = true;
+      _regionServicesError = null;
+    });
+
+    try {
+      final raw = await ServiceRequestApi.fetchRegionRequests(token: widget.authToken);
+      final parsed = raw
+          .map(ServiceRequestModel.fromJson)
+          .where((service) => _managerRegion <= 0 || service.region == _managerRegion)
+          .toList();
+      if (!mounted) return;
+      setState(() => _regionServices = parsed);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _regionServicesError = error.toString();
+        _regionServices = [];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isRegionServicesLoading = false);
+    }
+  }
+
   Future<void> _loadReports() async {
     if (widget.authToken.isEmpty) {
       setState(() {
@@ -195,7 +240,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     }
   }
 
-  Future<void> _handleResolveReport(String reportId) async {
+  Future<void> _handleUpdateReportStatus(String reportId, bool resolved) async {
     if (reportId.isEmpty) {
       _showSnack('Không xác định được phản ánh để cập nhật.', isError: true);
       return;
@@ -207,7 +252,11 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
 
     setState(() => _resolvingReportId = reportId);
     try {
-      await ReportsApi.resolveReport(reportId: reportId, token: widget.authToken);
+      await ReportsApi.resolveReport(
+        reportId: reportId,
+        resolved: resolved,
+        token: widget.authToken,
+      );
       if (!mounted) return;
       _showSnack('Đã cập nhật trạng thái phản ánh.');
       await _loadReports();
@@ -217,6 +266,64 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     } finally {
       if (!mounted) return;
       setState(() => _resolvingReportId = null);
+    }
+  }
+
+  Future<void> _handleToggleCustomerStatus(String userId, bool nextStatus) async {
+    if (userId.isEmpty) {
+      _showSnack('Không xác định được khách hàng để cập nhật.', isError: true);
+      return;
+    }
+    if (widget.authToken.isEmpty) {
+      _showSnack('Phiên đăng nhập không hợp lệ.', isError: true);
+      return;
+    }
+
+    setState(() => _togglingCustomerId = userId);
+    try {
+      await UserManagementApi.updateStatus(
+        userId: userId,
+        isActive: nextStatus,
+        token: widget.authToken,
+      );
+      if (!mounted) return;
+      _showSnack('Đã cập nhật trạng thái khách hàng.');
+      await _loadCustomers();
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Không thể cập nhật khách hàng: $error', isError: true);
+    } finally {
+      if (!mounted) return;
+      setState(() => _togglingCustomerId = null);
+    }
+  }
+
+  Future<void> _handleToggleWorkerStatus(String userId, bool nextStatus) async {
+    if (userId.isEmpty) {
+      _showSnack('Không xác định được nhân viên để cập nhật.', isError: true);
+      return;
+    }
+    if (widget.authToken.isEmpty) {
+      _showSnack('Phiên đăng nhập không hợp lệ.', isError: true);
+      return;
+    }
+
+    setState(() => _togglingWorkerId = userId);
+    try {
+      await UserManagementApi.updateStatus(
+        userId: userId,
+        isActive: nextStatus,
+        token: widget.authToken,
+      );
+      if (!mounted) return;
+      _showSnack('Đã cập nhật trạng thái nhân viên.');
+      await _loadWorkers();
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Không thể cập nhật nhân viên: $error', isError: true);
+    } finally {
+      if (!mounted) return;
+      setState(() => _togglingWorkerId = null);
     }
   }
 
@@ -250,6 +357,8 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           isLoading: _isCustomersLoading,
           errorMessage: _customersError,
           onRefresh: _loadCustomers,
+          onToggleStatus: _handleToggleCustomerStatus,
+          togglingUserId: _togglingCustomerId,
         );
 
       case 'report':
@@ -258,7 +367,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           isLoading: _isReportsLoading,
           errorMessage: _reportsError,
           onRefresh: _loadReports,
-          onResolve: _handleResolveReport,
+          onStatusChange: _handleUpdateReportStatus,
           resolvingReportId: _resolvingReportId,
         );
 
@@ -268,11 +377,18 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           isLoading: _isWorkersLoading,
           errorMessage: _workersError,
           onRefresh: _loadWorkers,
+          onToggleStatus: _handleToggleWorkerStatus,
+          togglingUserId: _togglingWorkerId,
         );
       case 'request':
         return const Center(child: Text("Màn hình Yêu cầu (Đang phát triển)"));
       case 'task':
-        return const Center(child: Text("Màn hình Nhiệm vụ (Đang phát triển)"));
+        return ManagerTaskPanel(
+          services: _regionServices,
+          isLoading: _isRegionServicesLoading,
+          errorMessage: _regionServicesError,
+          onRefresh: _loadRegionServices,
+        );
       case 'setting':
         return AccountSettingsPanel(
           username: _managerUsername,
@@ -307,6 +423,9 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         break;
       case 'report':
         title = 'Phản ánh khu vực';
+        break;
+      case 'task':
+        title = 'Công việc khu vực';
         break;
       case 'home':
         title = 'Dashboard';

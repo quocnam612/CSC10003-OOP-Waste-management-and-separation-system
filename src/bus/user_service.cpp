@@ -2,6 +2,7 @@
 #include "../db/user_repo.h"
 #include "../bus/ultis.h"
 #include <bsoncxx/types.hpp>
+#include <bsoncxx/oid.hpp>
 
 expected<bool, string> UserService::updateProfile(const string& username, const string& name, const string& phone, int region) {
     auto user = UserRepository::findByUsername(username);
@@ -90,4 +91,55 @@ expected<std::vector<bsoncxx::document::value>, string> UserService::getWorkersB
     }
 
     return UserRepository::findUsersByRegionAndRole(region, 2);
+}
+
+expected<bool, string> UserService::updateUserActiveStatus(
+    const string& managerUsername,
+    const string& targetUserId,
+    bool isActive
+) {
+    auto manager = UserRepository::findByUsername(managerUsername);
+    if (!manager) {
+        return unexpected("User not found");
+    }
+
+    auto view = manager->view();
+    int role = 0;
+    if (auto roleElement = view["role"]; roleElement) {
+        if (roleElement.type() == bsoncxx::type::k_int32) {
+            role = roleElement.get_int32().value;
+        } else if (roleElement.type() == bsoncxx::type::k_int64) {
+            role = static_cast<int>(roleElement.get_int64().value);
+        }
+    }
+
+    if (role != 3) {
+        return unexpected("Permission denied");
+    }
+
+    int region = 0;
+    if (auto regionElement = view["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (region <= 0) {
+        return unexpected("Manager region invalid");
+    }
+
+    bsoncxx::oid oid;
+    try {
+        oid = bsoncxx::oid(targetUserId);
+    } catch (const std::exception&) {
+        return unexpected("Invalid user id");
+    }
+
+    if (!UserRepository::updateActiveStatus(oid, region, isActive)) {
+        return unexpected("User not found");
+    }
+
+    return true;
 }

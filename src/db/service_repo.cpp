@@ -30,6 +30,23 @@ std::vector<bsoncxx::document::value> ServiceRepository::findServicesByUserId(co
     return services;
 }
 
+std::vector<bsoncxx::document::value> ServiceRepository::findServicesByRegion(int region) {
+    mongocxx::options::find options;
+    options.sort(document{} << "created_at" << -1 << finalize);
+
+    auto cursor = MongoConnection::services().find(
+        document{} << "region" << region << finalize,
+        options
+    );
+
+    std::vector<bsoncxx::document::value> services;
+    for (auto&& item : cursor) {
+        services.emplace_back(bsoncxx::document::value(item));
+    }
+
+    return services;
+}
+
 bool ServiceRepository::deleteService(const bsoncxx::oid& serviceId, const bsoncxx::oid& userId) {
     auto result = MongoConnection::services().delete_one(
         document{} << "_id" << serviceId << "user" << userId << finalize

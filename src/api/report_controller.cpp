@@ -105,7 +105,18 @@ void ReportController::registerRoutes(crow::SimpleApp& app) {
             return crow::response(401, "Unauthorized");
         }
 
-        auto result = ReportService::markResolved(*username, id);
+        bool resolved = true;
+        if (!req.body.empty()) {
+            auto body = crow::json::load(req.body);
+            if (body && body.has("resolved")) {
+                auto type = body["resolved"].t();
+                if (type == crow::json::type::True || type == crow::json::type::False) {
+                    resolved = body["resolved"].b();
+                }
+            }
+        }
+
+        auto result = ReportService::markResolved(*username, id, resolved);
         if (!result.has_value()) {
             return crow::response(400, result.error());
         }

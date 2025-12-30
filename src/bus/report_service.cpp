@@ -79,7 +79,8 @@ expected<std::vector<bsoncxx::document::value>, string> ReportService::getReport
 
 expected<bool, string> ReportService::markResolved(
     const string& username,
-    const string& reportId
+    const string& reportId,
+    bool resolved
 ) {
     auto manager = UserRepository::findByUsername(username);
     if (!manager) {
@@ -107,7 +108,7 @@ expected<bool, string> ReportService::markResolved(
         return unexpected("Invalid report id");
     }
 
-    if (!ReportRepository::markResolved(oid, region)) {
+    if (!ReportRepository::markResolved(oid, region, resolved)) {
         return unexpected("Report not found");
     }
 

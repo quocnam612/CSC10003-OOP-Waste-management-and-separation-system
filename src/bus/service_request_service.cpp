@@ -80,6 +80,44 @@ expected<std::vector<bsoncxx::document::value>, string> ServiceRequestService::g
     return ServiceRepository::findServicesByUserId(userId);
 }
 
+expected<std::vector<bsoncxx::document::value>, string> ServiceRequestService::getRequestsForManagerRegion(
+    const string& username
+) {
+    auto user = UserRepository::findByUsername(username);
+    if (!user) {
+        return unexpected("User not found");
+    }
+
+    auto userView = user->view();
+    int role = 0;
+    if (auto roleElement = userView["role"]; roleElement) {
+        if (roleElement.type() == bsoncxx::type::k_int32) {
+            role = roleElement.get_int32().value;
+        } else if (roleElement.type() == bsoncxx::type::k_int64) {
+            role = static_cast<int>(roleElement.get_int64().value);
+        }
+    }
+
+    if (role != 3) {
+        return unexpected("Permission denied");
+    }
+
+    int region = 0;
+    if (auto regionElement = userView["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (region <= 0) {
+        return unexpected("Region not configured");
+    }
+
+    return ServiceRepository::findServicesByRegion(region);
+}
+
 expected<bool, string> ServiceRequestService::cancelRequest(
     const string& username,
     const string& serviceId

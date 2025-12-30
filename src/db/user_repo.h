@@ -4,6 +4,7 @@
 #include <vector>
 #include <bsoncxx/document/value.hpp>
 #include <bsoncxx/document/view_or_value.hpp>
+#include <bsoncxx/oid.hpp>
 
 class UserRepository {
 public:
@@ -13,4 +14,5 @@ public:
     static bool updateProfile(const std::string& username, const std::string& name, const std::string& phone, int region);
     static bool updatePasswordHash(const std::string& username, const std::string& newHash);
     static std::vector<bsoncxx::document::value> findUsersByRegionAndRole(int region, int role);
+    static bool updateActiveStatus(const bsoncxx::oid& userId, int region, bool isActive);
 };

@@ -56,25 +56,25 @@ class ServiceRequestApi {
     }
 
     if (response.body.isEmpty) return const [];
+    return _decodeServicesBody(response.body);
+  }
 
-    final decoded = jsonDecode(response.body);
-    dynamic rawServices;
-    if (decoded is Map<String, dynamic>) {
-      rawServices = decoded['services'];
-    } else if (decoded is List) {
-      rawServices = decoded;
+  static Future<List<Map<String, dynamic>>> fetchRegionRequests({String? token}) async {
+    final response = await http.get(
+      _uri('/api/services/region'),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        response.body.isNotEmpty
+            ? response.body
+            : 'Không thể tải danh sách công việc (${response.statusCode})',
+      );
     }
 
-    if (rawServices is List) {
-      return rawServices
-          .where((item) => item is Map)
-          .map<Map<String, dynamic>>(
-            (item) => Map<String, dynamic>.from(item as Map),
-          )
-          .toList(growable: false);
-    }
-
-    return const [];
+    if (response.body.isEmpty) return const [];
+    return _decodeServicesBody(response.body);
   }
 
   static Future<void> cancelRequest({
@@ -93,5 +93,26 @@ class ServiceRequestApi {
           ? response.body
           : 'Không thể hủy dịch vụ (${response.statusCode})',
     );
+  }
+
+  static List<Map<String, dynamic>> _decodeServicesBody(String body) {
+    final decoded = jsonDecode(body);
+    dynamic rawServices;
+    if (decoded is Map<String, dynamic>) {
+      rawServices = decoded['services'];
+    } else if (decoded is List) {
+      rawServices = decoded;
+    }
+
+    if (rawServices is List) {
+      return rawServices
+          .where((item) => item is Map)
+          .map<Map<String, dynamic>>(
+            (item) => Map<String, dynamic>.from(item as Map),
+          )
+          .toList(growable: false);
+    }
+
+    return const [];
   }
 }

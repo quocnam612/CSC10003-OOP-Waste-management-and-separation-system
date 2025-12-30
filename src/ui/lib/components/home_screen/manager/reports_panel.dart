@@ -6,7 +6,7 @@ class ReportsPanel extends StatelessWidget {
   final bool isLoading;
   final String? errorMessage;
   final Future<void> Function()? onRefresh;
-  final Future<void> Function(String id)? onResolve;
+  final Future<void> Function(String id, bool resolved)? onStatusChange;
   final String? resolvingReportId;
 
   const ReportsPanel({
@@ -15,7 +15,7 @@ class ReportsPanel extends StatelessWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRefresh,
-    this.onResolve,
+    this.onStatusChange,
     this.resolvingReportId,
   });
 
@@ -55,18 +55,20 @@ class ReportsPanel extends StatelessWidget {
         child: Center(child: Text('Chưa có phản ánh nào trong khu vực này.')),
       );
     } else {
+      final fallback = DateTime.fromMillisecondsSinceEpoch(0);
+      final sortedReports = [...reports]
+        ..sort((a, b) => (b.createdAt ?? fallback).compareTo(a.createdAt ?? fallback));
       content = Column(
         children: [
-          for (int i = 0; i < reports.length; i++)
-            Padding(
-              padding: EdgeInsets.only(bottom: i == reports.length - 1 ? 0 : 12),
-              child: _ReportCard(
-                report: reports[i],
-                primaryColor: primaryColor,
-                onResolve: onResolve,
-                isResolving: resolvingReportId == reports[i].id,
-              ),
+          _buildHeaderRow(primaryColor),
+          const Divider(height: 1),
+          for (int i = 0; i < sortedReports.length; i++) ...[
+            _buildDataRow(
+              sortedReports[i],
+              resolvingReportId == sortedReports[i].id,
             ),
+            if (i != sortedReports.length - 1) const Divider(height: 1),
+          ],
         ],
       );
     }
@@ -104,86 +106,114 @@ class ReportsPanel extends StatelessWidget {
       ),
     );
   }
-}
 
-class _ReportCard extends StatelessWidget {
-  final ReportModel report;
-  final Color primaryColor;
-  final Future<void> Function(String id)? onResolve;
-  final bool isResolving;
-
-  const _ReportCard({
-    required this.report,
-    required this.primaryColor,
-    this.onResolve,
-    this.isResolving = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeaderRow(Color primaryColor) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        color: Colors.white,
+        color: primaryColor.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: report.resolved ? Colors.green : Colors.amber,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      report.typeLabel,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      report.title,
-                      style: const TextStyle(color: Colors.black87),
-                    ),
-                  ],
-                ),
-              ),
-              if (!report.resolved && onResolve != null)
-                TextButton(
-                  onPressed: isResolving ? null : () => onResolve!(report.id),
-                  child: Text(
-                    isResolving ? 'Đang cập nhật...' : 'Đánh dấu đã xử lý',
-                    style: TextStyle(color: primaryColor),
-                  ),
-                ),
-            ],
+          _buildHeaderCell('Loại', flex: 2),
+          _buildHeaderCell('Tiêu đề', flex: 2),
+          _buildHeaderCell('Nội dung', flex: 3),
+          _buildHeaderCell('Ngày tạo', flex: 2),
+          _buildHeaderCell('Trạng thái', flex: 2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String text, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildDataCell(Widget child, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: child,
+    );
+  }
+
+  Widget _buildDataRow(
+    ReportModel report,
+    bool isResolving,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      child: Row(
+        children: [
+          _buildDataCell(
+            Text(
+              report.typeLabel,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            flex: 2,
           ),
-          const SizedBox(height: 8),
-          Text(
-            report.content,
-            style: const TextStyle(color: Colors.black87),
+          _buildDataCell(Text(report.title), flex: 2),
+          _buildDataCell(
+            Text(
+              report.content,
+              overflow: TextOverflow.ellipsis,
+            ),
+            flex: 3,
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox.shrink(),
-              Text(
-                report.createdDate,
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-            ],
+          _buildDataCell(Text(report.createdDate), flex: 2),
+          _buildDataCell(
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _buildStatusBadge(report, isResolving),
+            ),
+            flex: 2,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(ReportModel report, bool isResolving) {
+    final resolved = report.resolved;
+    final color = resolved ? Colors.green : Colors.amber;
+    final label = isResolving
+        ? 'Đang cập nhật...'
+        : (resolved ? 'Đã xử lý' : 'Chờ xử lý');
+    final canToggle = onStatusChange != null && !isResolving;
+
+    return MouseRegion(
+      cursor: canToggle ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTap: canToggle ? () => onStatusChange!(report.id, !report.resolved) : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color, width: 0.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.circle, size: 10, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color.shade700,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

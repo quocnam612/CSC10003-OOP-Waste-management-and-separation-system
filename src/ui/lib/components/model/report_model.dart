@@ -6,6 +6,7 @@ class ReportModel {
   final String typeLabel;
   final bool resolved;
   final String createdDate;
+  final DateTime? createdAt;
 
   ReportModel({
     required this.id,
@@ -15,9 +16,11 @@ class ReportModel {
     required this.typeLabel,
     required this.resolved,
     required this.createdDate,
+    required this.createdAt,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
+    final created = _parseTimestamp(json['created_at']);
     return ReportModel(
       id: (json['id'] ?? '').toString(),
       title: (json['title'] ?? '').toString(),
@@ -25,7 +28,8 @@ class ReportModel {
       type: json['type'] is num ? (json['type'] as num).toInt() : 0,
       typeLabel: _typeToLabel(json['type']),
       resolved: json['resolved'] is bool ? json['resolved'] as bool : false,
-      createdDate: _formatTimestamp(json['created_at']),
+      createdDate: _formatDate(created),
+      createdAt: created,
     );
   }
 
@@ -51,7 +55,7 @@ class ReportModel {
     }
   }
 
-  static String _formatTimestamp(dynamic timestamp) {
+  static DateTime? _parseTimestamp(dynamic timestamp) {
     int? millis;
     if (timestamp is int) {
       millis = timestamp;
@@ -61,12 +65,15 @@ class ReportModel {
       millis = int.tryParse(timestamp);
     }
 
-    if (millis == null || millis <= 0) return '--';
+    if (millis == null || millis <= 0) return null;
 
-    final date = DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true).toLocal();
+    return DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true).toLocal();
+  }
+
+  static String _formatDate(DateTime? date) {
+    if (date == null) return '--';
     String twoDigits(int value) => value.toString().padLeft(2, '0');
     final formattedDate = '${twoDigits(date.day)}/${twoDigits(date.month)}/${date.year}';
-    final formattedTime = '${twoDigits(date.hour)}:${twoDigits(date.minute)}';
-    return '$formattedDate $formattedTime';
+    return formattedDate;
   }
 }

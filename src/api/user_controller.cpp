@@ -208,4 +208,40 @@ void UserController::registerRoutes(crow::SimpleApp& app) {
 
     CROW_ROUTE(app, "/api/customers").methods("GET"_method)(listCustomersHandler);
     CROW_ROUTE(app, "/api/workers").methods("GET"_method)(listWorkersHandler);
+
+    auto updateStatusHandler = [](const crow::request& req, const string& userId) {
+        auto username = SessionManager::instance().usernameFromRequest(req);
+        if (!username) {
+            return crow::response(401, "Unauthorized");
+        }
+
+        if (req.body.empty()) {
+            return crow::response(400, "Invalid payload");
+        }
+
+        auto body = crow::json::load(req.body);
+        if (!body || !body.has("is_active")) {
+            return crow::response(400, "Invalid payload");
+        }
+
+        bool isActive;
+        const auto valueType = body["is_active"].t();
+        if (valueType == crow::json::type::True) {
+            isActive = true;
+        } else if (valueType == crow::json::type::False) {
+            isActive = false;
+        } else {
+            return crow::response(400, "Invalid payload");
+        }
+
+        auto result = UserService::updateUserActiveStatus(*username, userId, isActive);
+        if (!result.has_value()) {
+            auto resp = crow::response(400, result.error());
+            return resp;
+        }
+
+        return crow::response(204);
+    };
+
+    CROW_ROUTE(app, "/api/users/<string>/status").methods("PUT"_method)(updateStatusHandler);
 }

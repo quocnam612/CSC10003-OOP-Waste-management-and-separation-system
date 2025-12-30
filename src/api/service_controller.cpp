@@ -6,6 +6,7 @@
 #include <bsoncxx/types.hpp>
 #include <chrono>
 #include <string>
+#include <vector>
 
 using std::string;
 
@@ -36,22 +37,11 @@ void ServiceController::registerRoutes(crow::SimpleApp& app) {
         return crow::response(201, "Service request created");
     };
 
-    auto listServicesHandler = [](const crow::request& req) -> crow::response {
-        auto username = SessionManager::instance().usernameFromRequest(req);
-        if (!username) {
-            return crow::response(401, "Unauthorized");
-        }
-
-        auto services = ServiceRequestService::getRequestsForUser(*username);
-        if (!services.has_value()) {
-            return crow::response(400, services.error());
-        }
-
+    const auto serializeServices = [](const std::vector<bsoncxx::document::value>& serviceList) {
         crow::json::wvalue response;
         crow::json::wvalue::list list;
-        list.reserve(services->size());
+        list.reserve(serviceList.size());
 
-        const auto& serviceList = services.value();
         for (const auto& docValue : serviceList) {
             auto view = docValue.view();
             crow::json::wvalue item;
@@ -100,7 +90,40 @@ void ServiceController::registerRoutes(crow::SimpleApp& app) {
         }
 
         response["services"] = crow::json::wvalue(list);
-        return crow::response(response);
+        return response;
+    };
+
+    auto listServicesHandler = [serializeServices](const crow::request& req) -> crow::response {
+        auto username = SessionManager::instance().usernameFromRequest(req);
+        if (!username) {
+            return crow::response(401, "Unauthorized");
+        }
+
+        auto services = ServiceRequestService::getRequestsForUser(*username);
+        if (!services.has_value()) {
+            return crow::response(400, services.error());
+        }
+
+        auto payload = serializeServices(services.value());
+        return crow::response(payload);
+    };
+
+    auto listRegionServicesHandler = [serializeServices](const crow::request& req) -> crow::response {
+        auto username = SessionManager::instance().usernameFromRequest(req);
+        if (!username) {
+            return crow::response(401, "Unauthorized");
+        }
+
+        auto services = ServiceRequestService::getRequestsForManagerRegion(*username);
+        if (!services.has_value()) {
+            if (services.error() == "Permission denied") {
+                return crow::response(403, services.error());
+            }
+            return crow::response(400, services.error());
+        }
+
+        auto payload = serializeServices(services.value());
+        return crow::response(payload);
     };
 
     auto deleteServiceHandler = [](const crow::request& req, const string& id) -> crow::response {
@@ -119,5 +142,6 @@ void ServiceController::registerRoutes(crow::SimpleApp& app) {
 
     CROW_ROUTE(app, "/api/services").methods("POST"_method)(createServiceHandler);
     CROW_ROUTE(app, "/api/services").methods("GET"_method)(listServicesHandler);
+    CROW_ROUTE(app, "/api/services/region").methods("GET"_method)(listRegionServicesHandler);
     CROW_ROUTE(app, "/api/services/<string>").methods("DELETE"_method)(deleteServiceHandler);
 }
