@@ -7,6 +7,10 @@
 * CMake
 * Flutter
 
+## Download ONLY the app
+
+find it at Release section
+
 ## Run the app WITHOUT API server
 
 I've already host it on render at csc10003-oop-waste-management-and.onrender.com
