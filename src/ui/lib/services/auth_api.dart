@@ -22,7 +22,17 @@ class AuthApi {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final token = decoded['token'] as String?;
+      final user = decoded['user'];
+
+      if (token == null || user == null) {
+        throw Exception('Phản hồi đăng nhập không hợp lệ');
+      }
+
+      final userMap = Map<String, dynamic>.from(user as Map);
+
+      return {'token': token, 'user': userMap};
     }
 
     throw Exception(

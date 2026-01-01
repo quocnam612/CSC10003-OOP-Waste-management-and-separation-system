@@ -1,6 +1,7 @@
 #include "auth_controller.h"
 #include "crow.h"
 #include "../bus/auth_service.h"
+#include "../bus/session_manager.h"
 using std::string;
 
 void AuthController::registerRoutes(crow::SimpleApp& app) {
@@ -37,9 +38,19 @@ void AuthController::registerRoutes(crow::SimpleApp& app) {
         if (!result.has_value())
             return crow::response(401, result.error());
 
-        // Return document as JSON:
+        auto token = SessionManager::instance().issueToken(username);
         auto view = result.value().view();
-        return crow::response(200, bsoncxx::to_json(view));
+
+        auto userJson = bsoncxx::to_json(view);
+        crow::json::wvalue response;
+        response["token"] = token;
+        response["user"] = crow::json::load(userJson);
+
+        crow::response resp;
+        resp.code = 200;
+        resp.set_header("Content-Type", "application/json");
+        resp.body = response.dump();
+        return resp;
     });
 
 }

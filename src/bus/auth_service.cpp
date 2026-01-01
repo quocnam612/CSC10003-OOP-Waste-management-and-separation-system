@@ -3,10 +3,12 @@
 #include "../bus/ultis.h"
 #include "../db/user_repo.h"
 
-expected<bool, string> AuthService::registerUser(short role, string username, string password, string phone, string name, int region) {
-    using bsoncxx::builder::stream::document;
-    using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::open_document;
+using bsoncxx::builder::stream::close_document;
 
+expected<bool, string> AuthService::registerUser(short role, string username, string password, string phone, string name, int region) {
     // 1. Check if username exists
     if (UserRepository::usernameExists(username)) {
         std::cout << "Username already exists\n";
@@ -29,27 +31,9 @@ expected<bool, string> AuthService::registerUser(short role, string username, st
         << "created_at" << now
         << "updated_at" << now;
 
-    switch (role) {
-    case 1: // User
-        doc << "data" << bsoncxx::builder::stream::open_document
-            << "point" << 0
-            << "balance" << 0
-            << "streak" << 0
-            << "multiplier" << 1
-        << bsoncxx::builder::stream::close_document;
-        break;
-    case 2: // Operator
-        /* TODO: Worker registration logic */
-        
-        break;
-    case 3: // Admin
-        /* TODO:Manager registration logic */
-        
-        break;
-    default:
-        break;
+    if (role == 2) {
+        doc << "team" << -1;
     }
-
 
     // 5. Insert into DB
     auto result = UserRepository::insertUser(doc.view());
@@ -58,9 +42,6 @@ expected<bool, string> AuthService::registerUser(short role, string username, st
 }
 
 expected<bsoncxx::document::value, string> AuthService::loginUser(string username, string password) {
-    using bsoncxx::builder::stream::document;
-    using bsoncxx::builder::stream::finalize;
-
     // 1. Find user
     auto userDoc = UserRepository::findByUsername(username);
 
@@ -80,6 +61,12 @@ expected<bsoncxx::document::value, string> AuthService::loginUser(string usernam
     if (hash != storedHash) {
         std::cout << "Wrong password\n";
         return unexpected("Wrong password");
+    }
+
+    if (auto activeElement = view["is_active"]; activeElement && activeElement.type() == bsoncxx::type::k_bool) {
+        if (!activeElement.get_bool().value) {
+            return unexpected("Account is deactivated");
+        }
     }
 
     // 4. Return the document (successful login)
