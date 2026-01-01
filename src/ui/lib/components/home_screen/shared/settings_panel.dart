@@ -306,7 +306,7 @@ class _AccountSettingsPanelState extends State<AccountSettingsPanel> {
     }
 
     return DropdownButtonFormField<int>(
-      value: _selectedRegion,
+      initialValue: _selectedRegion,
       decoration: const InputDecoration(
         labelText: 'Phường',
         border: OutlineInputBorder(),

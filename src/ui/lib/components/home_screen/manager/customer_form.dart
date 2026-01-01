@@ -85,7 +85,7 @@ class _CustomerFormDialogState extends State<CustomerFormDialog> {
               SwitchListTile(
                 title: const Text('Trạng thái hoạt động'),
                 value: _isActive,
-                activeColor: Theme.of(context).colorScheme.primary,
+                activeThumbColor: Theme.of(context).colorScheme.primary,
                 onChanged: (val) {
                   setState(() => _isActive = val);
                 },

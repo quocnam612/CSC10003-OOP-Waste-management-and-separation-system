@@ -15,4 +15,6 @@ public:
     static bool updatePasswordHash(const std::string& username, const std::string& newHash);
     static std::vector<bsoncxx::document::value> findUsersByRegionAndRole(int region, int role);
     static bool updateActiveStatus(const bsoncxx::oid& userId, int region, bool isActive);
+    static std::vector<bsoncxx::document::value> findWorkersByTeam(int team, int region);
+    static bool updateTeam(const bsoncxx::oid& userId, int region, int team);
 };

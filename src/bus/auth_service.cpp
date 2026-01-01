@@ -31,18 +31,8 @@ expected<bool, string> AuthService::registerUser(short role, string username, st
         << "created_at" << now
         << "updated_at" << now;
 
-    switch (role) {
-    case 1:  // User
-
-        break;
-    case 2:  // Worker
-
-        break;
-    case 3:  // Admin
-    
-        break;
-    default:
-        break;
+    if (role == 2) {
+        doc << "team" << -1;
     }
 
     // 5. Insert into DB

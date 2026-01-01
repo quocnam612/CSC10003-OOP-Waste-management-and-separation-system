@@ -106,9 +106,9 @@ class ServiceRequestApi {
 
     if (rawServices is List) {
       return rawServices
-          .where((item) => item is Map)
+          .whereType<Map>()
           .map<Map<String, dynamic>>(
-            (item) => Map<String, dynamic>.from(item as Map),
+            (item) => Map<String, dynamic>.from(item),
           )
           .toList(growable: false);
     }

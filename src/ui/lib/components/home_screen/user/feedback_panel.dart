@@ -160,7 +160,7 @@ class _FeedbackPanelState extends State<FeedbackPanel> {
                     children: [
                     // 1. Chọn loại phản hồi
                     DropdownButtonFormField<int>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: const InputDecoration(
                         labelText: 'Loại phản hồi',
                         prefixIcon: Icon(Icons.category_outlined),

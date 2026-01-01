@@ -93,6 +93,55 @@ expected<std::vector<bsoncxx::document::value>, string> UserService::getWorkersB
     return UserRepository::findUsersByRegionAndRole(region, 2);
 }
 
+expected<std::vector<bsoncxx::document::value>, string> UserService::getWorkersByTeam(
+    const string& workerUsername
+) {
+    auto worker = UserRepository::findByUsername(workerUsername);
+    if (!worker) {
+        return unexpected("User not found");
+    }
+
+    auto view = worker->view();
+
+    int role = 0;
+    if (auto roleElement = view["role"]; roleElement) {
+        if (roleElement.type() == bsoncxx::type::k_int32) {
+            role = roleElement.get_int32().value;
+        } else if (roleElement.type() == bsoncxx::type::k_int64) {
+            role = static_cast<int>(roleElement.get_int64().value);
+        }
+    }
+
+    if (role != 2) {
+        return unexpected("Permission denied");
+    }
+
+    int team = -1;
+    if (auto teamElement = view["team"]; teamElement) {
+        if (teamElement.type() == bsoncxx::type::k_int32) {
+            team = teamElement.get_int32().value;
+        } else if (teamElement.type() == bsoncxx::type::k_int64) {
+            team = static_cast<int>(teamElement.get_int64().value);
+        }
+    }
+
+    int region = 0;
+    if (auto regionElement = view["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (team <= 0 || region <= 0) {
+        return std::vector<bsoncxx::document::value>{};
+    }
+
+    auto members = UserRepository::findWorkersByTeam(team, region);
+    return members;
+}
+
 expected<bool, string> UserService::updateUserActiveStatus(
     const string& managerUsername,
     const string& targetUserId,
@@ -138,6 +187,57 @@ expected<bool, string> UserService::updateUserActiveStatus(
     }
 
     if (!UserRepository::updateActiveStatus(oid, region, isActive)) {
+        return unexpected("User not found");
+    }
+
+    return true;
+}
+
+expected<bool, string> UserService::updateWorkerTeam(
+    const string& managerUsername,
+    const string& targetUserId,
+    int team
+) {
+    auto manager = UserRepository::findByUsername(managerUsername);
+    if (!manager) {
+        return unexpected("User not found");
+    }
+
+    auto view = manager->view();
+    int role = 0;
+    if (auto roleElement = view["role"]; roleElement) {
+        if (roleElement.type() == bsoncxx::type::k_int32) {
+            role = roleElement.get_int32().value;
+        } else if (roleElement.type() == bsoncxx::type::k_int64) {
+            role = static_cast<int>(roleElement.get_int64().value);
+        }
+    }
+
+    if (role != 3) {
+        return unexpected("Permission denied");
+    }
+
+    int region = 0;
+    if (auto regionElement = view["region"]; regionElement) {
+        if (regionElement.type() == bsoncxx::type::k_int32) {
+            region = regionElement.get_int32().value;
+        } else if (regionElement.type() == bsoncxx::type::k_int64) {
+            region = static_cast<int>(regionElement.get_int64().value);
+        }
+    }
+
+    if (region <= 0) {
+        return unexpected("Manager region invalid");
+    }
+
+    bsoncxx::oid oid;
+    try {
+        oid = bsoncxx::oid(targetUserId);
+    } catch (const std::exception&) {
+        return unexpected("Invalid user id");
+    }
+
+    if (!UserRepository::updateTeam(oid, region, team)) {
         return unexpected("User not found");
     }
 

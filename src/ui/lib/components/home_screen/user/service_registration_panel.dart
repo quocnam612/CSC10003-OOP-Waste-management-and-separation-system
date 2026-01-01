@@ -490,7 +490,7 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                     DropdownButtonFormField<String>(
-                      value: _selectedService,
+                      initialValue: _selectedService,
                       decoration: const InputDecoration(
                         labelText: 'Chọn dịch vụ',
                         prefixIcon: Icon(Icons.category),
@@ -506,7 +506,7 @@ class _ServiceRegistrationPanelState extends State<ServiceRegistrationPanel> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _selectedDistrict,
+                      initialValue: _selectedDistrict,
                       decoration: InputDecoration(
                         labelText: 'Khu phố',
                         prefixIcon: const Icon(Icons.location_city),

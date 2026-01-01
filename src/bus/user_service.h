@@ -13,5 +13,7 @@ public:
     static expected<bool, string> changePassword(const string& username, const string& currentPassword, const string& newPassword);
     static expected<std::vector<bsoncxx::document::value>, string> getResidentsByManagerRegion(const string& managerUsername);
     static expected<std::vector<bsoncxx::document::value>, string> getWorkersByManagerRegion(const string& managerUsername);
+    static expected<std::vector<bsoncxx::document::value>, string> getWorkersByTeam(const string& workerUsername);
     static expected<bool, string> updateUserActiveStatus(const string& managerUsername, const string& targetUserId, bool isActive);
+    static expected<bool, string> updateWorkerTeam(const string& managerUsername, const string& targetUserId, int team);
 };

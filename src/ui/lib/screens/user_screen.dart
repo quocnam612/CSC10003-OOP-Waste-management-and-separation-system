@@ -28,6 +28,7 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
   final String _userRole = "Cư dân";
   String _userPhone = "---";
   int _userRegion = 0;
+  int _panelReloadKey = 0;
 
   @override
   void initState() {
@@ -76,12 +77,14 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
       
       case 'feedback':
         return FeedbackPanel(
+          key: ValueKey('feedback_$_panelReloadKey'),
           authToken: widget.authToken,
           userRegion: _userRegion,
         );
       
       case 'service':
         return ServiceRegistrationPanel(
+          key: ValueKey('service_$_panelReloadKey'),
           userRegion: _userRegion,
           authToken: widget.authToken,
         );
@@ -94,10 +97,14 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
           initialRegion: _userRegion,
           authToken: widget.authToken,
           onProfileUpdated: (name, phone, region) {
+            final bool regionChanged = _userRegion != region;
             setState(() {
               _userName = name;
               _userPhone = phone;
               _userRegion = region;
+              if (regionChanged) {
+                _panelReloadKey++;
+              }
             });
           },
         );
@@ -113,13 +120,10 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
     switch (_currentView) {
       case 'service':
         title = 'Đăng Ký Dịch Vụ';
-        break;
       case 'feedback':
         title = 'Gửi Phản Hồi';
-        break;
       default:
         title = 'Trang Chủ Cư Dân';
-        break;
     }
 
     return DashboardLayout(

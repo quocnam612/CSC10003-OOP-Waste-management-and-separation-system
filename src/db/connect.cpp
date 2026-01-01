@@ -30,3 +30,7 @@ mongocxx::collection MongoConnection::reports() {
 mongocxx::collection MongoConnection::services() {
     return client()["green_route"]["services"];
 }
+
+mongocxx::collection MongoConnection::paths() {
+    return client()["green_route"]["paths"];
+}

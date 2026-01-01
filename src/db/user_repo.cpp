@@ -94,3 +94,35 @@ bool UserRepository::updateActiveStatus(const bsoncxx::oid& userId, int region, 
 
     return result && result->modified_count() > 0;
 }
+
+bool UserRepository::updateTeam(const bsoncxx::oid& userId, int region, int team) {
+    using bsoncxx::builder::stream::open_document;
+    using bsoncxx::builder::stream::close_document;
+
+    auto result = MongoConnection::users().update_one(
+        document{} << "_id" << userId << "region" << region << finalize,
+        document{} << "$set" << open_document
+            << "team" << team
+            << "updated_at" << bsoncxx::types::b_date(std::chrono::system_clock::now())
+            << close_document << finalize
+    );
+
+    return result && result->modified_count() > 0;
+}
+
+std::vector<bsoncxx::document::value> UserRepository::findWorkersByTeam(int team, int region) {
+    mongocxx::options::find options;
+    options.sort(document{} << "created_at" << -1 << finalize);
+
+    auto cursor = MongoConnection::users().find(
+        document{} << "team" << team << "region" << region << "role" << 2 << finalize,
+        options
+    );
+
+    std::vector<bsoncxx::document::value> users;
+    for (auto&& doc : cursor) {
+        users.emplace_back(bsoncxx::document::value(doc));
+    }
+
+    return users;
+}

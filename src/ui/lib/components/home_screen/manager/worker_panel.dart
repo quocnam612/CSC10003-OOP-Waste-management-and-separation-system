@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ui/components/model/worker_model.dart';
 
 class WorkerPanel extends StatelessWidget {
@@ -8,6 +9,7 @@ class WorkerPanel extends StatelessWidget {
   final Future<void> Function()? onRefresh;
   final Future<void> Function(String id, bool nextStatus)? onToggleStatus;
   final String? togglingUserId;
+  final Future<void> Function(String workerId, int? teamId)? onTeamChanged;
 
   const WorkerPanel({
     super.key,
@@ -17,6 +19,7 @@ class WorkerPanel extends StatelessWidget {
     this.onRefresh,
     this.onToggleStatus,
     this.togglingUserId,
+    this.onTeamChanged,
   });
 
   @override
@@ -113,6 +116,7 @@ class WorkerPanel extends StatelessWidget {
       ),
       child: Row(
         children: [
+          _buildHeaderCell('Đội', flex: 1),
           _buildHeaderCell('Họ tên', flex: 3),
           _buildHeaderCell('Tên TK', flex: 2),
           _buildHeaderCell('SĐT', flex: 2),
@@ -145,6 +149,7 @@ class WorkerPanel extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Row(
         children: [
+          _buildDataCell(_buildTeamInput(worker), flex: 1),
           _buildDataCell(
             Row(
               children: [
@@ -232,6 +237,41 @@ class WorkerPanel extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamInput(WorkerModel worker) {
+    final initialText = worker.team > 0 ? worker.team.toString() : '';
+    final inputFormatters = <TextInputFormatter>[
+      FilteringTextInputFormatter.allow(RegExp(r'^([1-9][0-9]{0,2})?$')),
+    ];
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: SizedBox(
+        width: 60,
+        child: TextFormField(
+          initialValue: initialText,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.left,
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            border: InputBorder.none,
+          ),
+          inputFormatters: inputFormatters,
+          onChanged: onTeamChanged == null
+              ? null
+              : (value) {
+                  final parsed = int.tryParse(value);
+                  if (parsed == null || parsed <= 0) {
+                    onTeamChanged!(worker.id, null);
+                  } else {
+                    onTeamChanged!(worker.id, parsed);
+                  }
+                },
         ),
       ),
     );

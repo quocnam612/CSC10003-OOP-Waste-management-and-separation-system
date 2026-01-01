@@ -7,6 +7,7 @@ import 'package:ui/components/model/customer_model.dart';
 import 'package:ui/components/model/report_model.dart';
 import 'package:ui/components/model/worker_model.dart';
 import 'package:ui/components/model/service_request_model.dart';
+import 'package:ui/components/model/route_model.dart';
 
 import 'package:ui/components/home_screen/manager/customer_panel.dart';
 import 'package:ui/components/home_screen/manager/reports_panel.dart';
@@ -19,6 +20,7 @@ import 'package:ui/services/reports_api.dart';
 import 'package:ui/services/worker_api.dart';
 import 'package:ui/services/service_request_api.dart';
 import 'package:ui/services/user_management_api.dart';
+import 'package:ui/services/routes_api.dart';
 
 class ManagerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -54,20 +56,14 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
         fallback: '---');
     _managerRegion =
         UserDataUtils.intField(widget.userData, 'region', fallback: 0);
-    _loadCustomers();
-    _loadWorkers();
-    _loadRegionServices();
-    _loadReports();
+    _reloadRegionData();
   }
 
   @override
   void didUpdateWidget(covariant ManagerDashboard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.authToken != widget.authToken) {
-      _loadCustomers();
-      _loadWorkers();
-      _loadRegionServices();
-      _loadReports();
+      _reloadRegionData();
     }
   }
 
@@ -89,6 +85,10 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
   List<ServiceRequestModel> _regionServices = [];
   bool _isRegionServicesLoading = false;
   String? _regionServicesError;
+  List<RouteModel> _routes = [];
+  bool _isRoutesLoading = false;
+  bool _isCreatingRoute = false;
+  String? _routesError;
   List<ReportModel> _reports = [];
   bool _isReportsLoading = false;
   String? _reportsError;
@@ -209,6 +209,48 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     }
   }
 
+  Future<void> _loadRoutes() async {
+    if (widget.authToken.isEmpty) {
+      setState(() {
+        _routes = [];
+        _routesError = 'Phiên đăng nhập không hợp lệ.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isRoutesLoading = true;
+      _routesError = null;
+    });
+
+    try {
+      final raw = await RoutesApi.fetchRoutes(token: widget.authToken);
+      final parsed = raw
+          .map(RouteModel.fromJson)
+          .where((route) => _managerRegion <= 0 || route.region == _managerRegion)
+          .toList();
+      if (!mounted) return;
+      setState(() => _routes = parsed);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _routesError = error.toString();
+        _routes = [];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isRoutesLoading = false);
+    }
+  }
+
+  void _reloadRegionData() {
+    _loadCustomers();
+    _loadWorkers();
+    _loadRegionServices();
+    _loadReports();
+    _loadRoutes();
+  }
+
   Future<void> _loadReports() async {
     if (widget.authToken.isEmpty) {
       setState(() {
@@ -327,6 +369,72 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     }
   }
 
+  Future<void> _handleUpdateWorkerTeam(String workerId, int? newTeamId) async {
+    if (workerId.isEmpty) return;
+    if (widget.authToken.isEmpty) {
+      _showSnack('Phiên đăng nhập không hợp lệ.', isError: true);
+      return;
+    }
+
+    final index = _workers.indexWhere((worker) => worker.id == workerId);
+    if (index == -1) return;
+
+    try {
+      await UserManagementApi.updateTeam(
+        userId: workerId,
+        team: newTeamId,
+        token: widget.authToken,
+      );
+
+      final updatedWorker =
+          _workers[index].copyWith(team: newTeamId ?? -1);
+      setState(() {
+        final updatedList = List<WorkerModel>.from(_workers);
+        updatedList[index] = updatedWorker;
+        _workers = updatedList;
+      });
+
+      final teamLabel =
+          (newTeamId == null || newTeamId <= 0) ? 'Chưa phân đội' : 'Đội #$newTeamId';
+      _showSnack('Đã chuyển ${updatedWorker.fullName} sang $teamLabel');
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Không thể cập nhật đội: $error', isError: true);
+    }
+  }
+
+  Future<void> _handleCreateRoute(RouteCreationData data) async {
+    if (widget.authToken.isEmpty) {
+      _showSnack('Phiên đăng nhập không hợp lệ.', isError: true);
+      return;
+    }
+    if (_managerRegion <= 0) {
+      _showSnack('Không xác định được khu vực để tạo tuyến.', isError: true);
+      return;
+    }
+
+    setState(() => _isCreatingRoute = true);
+    try {
+      await RoutesApi.createRoute(
+        district: data.district,
+        shift: data.shift,
+        team: data.team,
+        stops: data.stops,
+        region: _managerRegion,
+        token: widget.authToken,
+      );
+      if (!mounted) return;
+      _showSnack('Đã tạo tuyến đường mới.');
+      await _loadRoutes();
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Không thể tạo tuyến đường: $error', isError: true);
+    } finally {
+      if (!mounted) return;
+      setState(() => _isCreatingRoute = false);
+    }
+  }
+
   void _performLogout() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const AuthScreen()),
@@ -379,15 +487,29 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
           onRefresh: _loadWorkers,
           onToggleStatus: _handleToggleWorkerStatus,
           togglingUserId: _togglingWorkerId,
+          onTeamChanged: _handleUpdateWorkerTeam,
         );
       case 'request':
         return const Center(child: Text("Màn hình Yêu cầu (Đang phát triển)"));
       case 'task':
+        final availableTeams = _workers
+            .map((worker) => worker.team)
+            .where((team) => team > 0)
+            .toSet()
+            .toList()
+          ..sort();
         return ManagerTaskPanel(
           services: _regionServices,
           isLoading: _isRegionServicesLoading,
           errorMessage: _regionServicesError,
           onRefresh: _loadRegionServices,
+          routes: _routes,
+          availableTeams: availableTeams,
+          isRoutesLoading: _isRoutesLoading,
+          routesErrorMessage: _routesError,
+          onRoutesRefresh: _loadRoutes,
+          onCreateRoute: _handleCreateRoute,
+          isCreatingRoute: _isCreatingRoute,
         );
       case 'setting':
         return AccountSettingsPanel(
@@ -402,6 +524,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
               _managerPhone = phone;
               _managerRegion = region;
             });
+            _reloadRegionData();
           },
         );
       
@@ -417,22 +540,16 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
     switch (_currentView) {
       case 'customer':
         title = 'Quản lý Khách Hàng';
-        break;
       case 'manage':
         title = 'Quản lý Nhân viên';
-        break;
       case 'report':
         title = 'Phản ánh khu vực';
-        break;
       case 'task':
         title = 'Công việc khu vực';
-        break;
       case 'home':
         title = 'Dashboard';
-        break;
       default:
         title = 'Quản Lý';
-        break;
     }
 
     return DashboardLayout(

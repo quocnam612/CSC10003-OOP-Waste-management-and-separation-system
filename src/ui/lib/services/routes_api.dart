@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-class WorkerApi {
+class RoutesApi {
   static const String _baseUrl =
       String.fromEnvironment('API_URL', defaultValue: 'http://localhost:5000');
 
@@ -16,32 +16,35 @@ class WorkerApi {
     return headers;
   }
 
-  static Future<List<Map<String, dynamic>>> fetchWorkers({String? token}) async {
+  static Future<List<Map<String, dynamic>>> fetchRoutes({String? token}) async {
     final response = await http.get(
-      _uri('/api/workers'),
+      _uri('/api/routes'),
       headers: _headers(token),
     );
+
+    if (response.statusCode == 404) {
+      return const [];
+    }
 
     if (response.statusCode != 200) {
       throw Exception(
         response.body.isNotEmpty
             ? response.body
-            : 'Không thể tải danh sách nhân viên (${response.statusCode})',
+            : 'Không thể tải danh sách tuyến đường (${response.statusCode})',
       );
     }
 
     if (response.body.isEmpty) return const [];
-
     final decoded = jsonDecode(response.body);
-    dynamic rawWorkers;
+    dynamic rawRoutes;
     if (decoded is Map<String, dynamic>) {
-      rawWorkers = decoded['workers'];
+      rawRoutes = decoded['routes'] ?? decoded['data'] ?? decoded['items'];
     } else if (decoded is List) {
-      rawWorkers = decoded;
+      rawRoutes = decoded;
     }
 
-    if (rawWorkers is List) {
-      return rawWorkers
+    if (rawRoutes is List) {
+      return rawRoutes
           .whereType<Map>()
           .map<Map<String, dynamic>>(
             (item) => Map<String, dynamic>.from(item),
@@ -52,33 +55,35 @@ class WorkerApi {
     return const [];
   }
 
-  static Future<List<Map<String, dynamic>>> fetchTeamMembers(
-      {String? token}) async {
+  static Future<List<Map<String, dynamic>>> fetchWorkerRoutes({String? token}) async {
     final response = await http.get(
-      _uri('/api/team/members'),
+      _uri('/api/routes/team'),
       headers: _headers(token),
     );
+
+    if (response.statusCode == 404) {
+      return const [];
+    }
 
     if (response.statusCode != 200) {
       throw Exception(
         response.body.isNotEmpty
             ? response.body
-            : 'Không thể tải danh sách đội (${response.statusCode})',
+            : 'Không thể tải danh sách tuyến đường (${response.statusCode})',
       );
     }
 
     if (response.body.isEmpty) return const [];
-
     final decoded = jsonDecode(response.body);
-    dynamic rawMembers;
+    dynamic rawRoutes;
     if (decoded is Map<String, dynamic>) {
-      rawMembers = decoded['members'];
+      rawRoutes = decoded['routes'] ?? decoded['data'] ?? decoded['items'];
     } else if (decoded is List) {
-      rawMembers = decoded;
+      rawRoutes = decoded;
     }
 
-    if (rawMembers is List) {
-      return rawMembers
+    if (rawRoutes is List) {
+      return rawRoutes
           .whereType<Map>()
           .map<Map<String, dynamic>>(
             (item) => Map<String, dynamic>.from(item),
@@ -87,5 +92,34 @@ class WorkerApi {
     }
 
     return const [];
+  }
+
+  static Future<void> createRoute({
+    required String district,
+    required String shift,
+    required int team,
+    required List<String> stops,
+    required int region,
+    String? token,
+  }) async {
+    final response = await http.post(
+      _uri('/api/routes'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'district': district,
+        'shift': shift,
+        'team': team,
+        'route': stops,
+        'region': region,
+      }),
+    );
+
+    if (response.statusCode == 201) return;
+
+    throw Exception(
+      response.body.isNotEmpty
+          ? response.body
+          : 'Không thể tạo tuyến đường (${response.statusCode})',
+    );
   }
 }

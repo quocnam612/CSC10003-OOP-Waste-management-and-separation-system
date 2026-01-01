@@ -4,6 +4,7 @@
 #include "region_controller.h"
 #include "report_controller.h"
 #include "service_controller.h"
+#include "route_controller.h"
 
 void Router::init(crow::SimpleApp& app) {
     AuthController::registerRoutes(app);
@@ -11,4 +12,5 @@ void Router::init(crow::SimpleApp& app) {
     RegionController::registerRoutes(app);
     ReportController::registerRoutes(app);
     ServiceController::registerRoutes(app);
+    RouteController::registerRoutes(app);
 }

@@ -35,4 +35,24 @@ class UserManagementApi {
           : 'Không thể cập nhật trạng thái (${response.statusCode})',
     );
   }
+
+  static Future<void> updateTeam({
+    required String userId,
+    int? team,
+    String? token,
+  }) async {
+    final response = await http.put(
+      _uri('/api/users/$userId/team'),
+      headers: _headers(token),
+      body: jsonEncode({'team': team}),
+    );
+
+    if (response.statusCode == 204) return;
+
+    throw Exception(
+      response.body.isNotEmpty
+          ? response.body
+          : 'Không thể cập nhật đội (${response.statusCode})',
+    );
+  }
 }
