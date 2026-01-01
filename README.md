@@ -9,8 +9,8 @@
 
 ## Run the app WITHOUT API server
 
-I've already host it on render at [csc10003-oop-waste-management-and.onrender.com](csc10003-oop-waste-management-and.onrender.com).
-You can check with [csc10003-oop-waste-management-and.onrender.com/health](csc10003-oop-waste-management-and.onrender.com/health)
+I've already host it on render at csc10003-oop-waste-management-and.onrender.com
+You can check with csc10003-oop-waste-management-and.onrender.com/health
 
 ```
   cd src/ui
