@@ -1,68 +1,97 @@
-# CSC10003-OOP-Waste-management-and-separation-system
+# Backend Server
 
-## Requirement
+#### Cách 1: Dùng Docker
 
-* C++23
-* Docker
-* CMake
-* Flutter
+**Requirement:** Docker
 
-## Download ONLY the app
+**Build & run:** 
 
-find it at Release section
+- Linux
 
-## Run the app WITHOUT API server
-
-I've already host it on render at csc10003-oop-waste-management-and.onrender.com
-You can check with csc10003-oop-waste-management-and.onrender.com/health
-
-```
-  cd src/ui
-  flutter run --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
+```bash
+cd source
+docker build -t green-route .
+docker run --rm -p 5000:5000 green_route
 ```
 
-or build it into an actual program with:
+- Windows
 
-* Linux:
+  - Bật backend WSL hoặc Hyper-V trong Docker Desktop.
 
-  ```
-  cd src/ui
-  flutter build linux --release --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
-  ```
-* Windows:
+```powershell
+cd source
+docker build -t green-route .
+docker run --rm -p 5000:5000 green_route
+```
 
-  ```
-  cd src/ui
-  flutter build windows --release --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
-  ```
 
-## Run & Build API Server
+#### Cách 2: Dùng CMake
 
-The server will be at  `http://localhost:5000/`
+**Requirement:**
 
-* Docker: just run it
+- C++23
+- CMake
+- Asio C++ Library
+- Mongocxx (Mongodb c++ driver)
+- OpenSSL Library
 
-  ```
-  docker run --rm -p 5000:5000 green_route
-  ```
-* Cmake: need to install these requirement goodluck (mongocxx, OPENSSL, asio)
+**Build & run:** 
 
-  ```
-  cmake --build build
-  ```
-* Run
+- Linux
 
-  ```
-  ./out/greenroute
-  ```
+```bash
+cd source
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/green_route
+```
 
-## Run & Debug Frontend
+- Windows
 
-You can either go to `src/ui/lib/main.dart` and choose Run/Debug or:
+  - Cài Visual Studio (MSVC) + CMake và các thư viện mongocxx/bsoncxx, OpenSSL, Asio bản Windows rồi thêm vào `CMAKE_PREFIX_PATH`.
 
-* Run
+```powershell
+cd source
+cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release ^
+      -DCMAKE_PREFIX_PATH="C:/mongo-cxx-driver;C:/OpenSSL-Win64"
+cmake --build build --config Release
+.\build\Release\green_route.exe
+```
 
-  ```
-  cd src/ui
-  flutter run
-  ```
+# App
+
+**Requirement:** Flutter SDK
+
+#### Cách 1: Chạy trên Flutter
+
+- Nếu tự host backend
+
+```bash
+cd source/src/ui
+flutter run
+```
+
+- Nếu dùng server có sẵn trên Render (có thể chậm khi lần đầu dùng do server phải khởi động sau khi sleep)
+
+```bash
+cd source/src/ui
+flutter run --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
+```
+
+#### Cách 2: Build thành app
+
+- Linux: 
+  - App tại source/src/ui/build/linux/x64/release/bundle/ui
+
+```bash
+cd source/src/ui
+flutter build linux --release
+```
+
+- Windows: 
+  - App tại source/src/ui/build/windows/x64/runner/Release/greenroute.exe
+
+```bash
+cd source/src/ui
+flutter build windows --release
+```

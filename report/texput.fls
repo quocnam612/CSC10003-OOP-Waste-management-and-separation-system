@@ -1,0 +1,5 @@
+PWD e:/STUDY 2024-2029/2nd year/HK1/MMT/Project2/4_REPORT
+INPUT c:/texlive/2024/texmf.cnf
+INPUT c:/texlive/2024/texmf-dist/web2c/texmf.cnf
+INPUT c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt
+OUTPUT texput.log

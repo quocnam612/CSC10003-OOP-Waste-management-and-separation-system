@@ -1,0 +1,203 @@
+\section{Part 1: Analyzing HTTP Traffic (3.5 pt)}
+
+\subsection{How many HTTP GET request messages were transmitted by the browser? To which Internet addresses were these requests directed?}
+
+\begin{itemize}
+    \item[-] Để lọc các HTTP GET request, tại ô Display Filter của Wireshark, nhập:
+\begin{lstlisting}
+http.request.method == "GET"\end{lstlisting}
+    \item[-] Wireshark lúc này chỉ hiển thị các gói tin HTTP GET. Tiến hành đếm số gói tin trong danh sách.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/1-cau1.png}
+        \caption{Lọc các gói tin HTTP GET trong Wireshark}
+    \end{figure}
+    \item[-] Kết quả thu được 4 gói tin HTTP GET:
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|c|c|c|p{11cm}|}
+        \hline
+        \multicolumn{1}{|c|}{\textbf{STT}} & \multicolumn{1}{c|}{\textbf{Dòng}} & \multicolumn{1}{c|}{\textbf{Địa chỉ IP đích}} & \multicolumn{1}{c|}{\textbf{Thông tin}} \\
+        \hline
+        1 & 154 & 128.119.245.12 & GET /wireshark-labs/HTTP-wireshark-file4.html HTTP/1.1 \\
+        \hline
+        2 & 165 & 128.119.245.12 & GET /pearson.png HTTP/1.1 \\
+        \hline
+        3 & 176 & 2.56.99.24 & GET /8E\_cover\_small.jpg HTTP/1.1 \\
+        \hline
+        4 & 533 & 128.119.245.12 & GET /favicon.ico HTTP/1.1 \\
+        \hline
+    \end{tabular}
+    \caption{Các HTTP GET request được truyền bởi trình duyệt}
+\end{table}
+
+\subsection{Determine whether the browser retrieved the two images sequentially or concurrently from their respective web servers, and provide an explanation for your conclusion by examining the timing of the requests and the source IP addresses}
+
+\begin{itemize}
+    \item[-] Sau khi lọc các gói tin HTTP GET, thu được 4 yêu cầu GET với 2 yêu cầu GET tương ứng với hai tệp hình ảnh:
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/1-cau2.png}
+        \caption{Hai tệp hình ảnh từ hai yêu cầu GET}
+    \end{figure}
+    \begin{table}[H]
+        \centering
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{|c|c|c|c|c|}
+            \hline
+            \multicolumn{1}{|c|}{\textbf{STT}} & \multicolumn{1}{c|}{\textbf{Dòng}} & \multicolumn{1}{c|}{\textbf{Time}} & \multicolumn{1}{c|}{\textbf{Địa chỉ IP đích}} & \multicolumn{1}{c|}{\textbf{File}} \\
+            \hline
+            1 & 165 & 11.729697 & 128.119.245.12 & pearson.png \\
+            \hline
+            2 & 176 & 11.983178 & 2.56.99.24 & 8E\_cover\_small.jpg \\
+            \hline
+            \end{tabular}
+        \caption{Các tệp hình ảnh được yêu cầu bởi trình duyệt}
+    \end{table}
+    \begin{itemize}
+        \item[$\bullet$] Hai ảnh được lấy từ 2 địa chỉ IP đích khác nhau
+        \item[$\bullet$] Chênh lệch thời gian giữa 2 yêu cầu GET: $11.983178 - 11.729697 = 0.253481$ giây $\rightarrow$ rất nhỏ
+    \end{itemize}
+    \item[-] Do hai ảnh được gửi trên hai địa chỉ IP đích khác nhau và hai yêu cầu GET được gửi cách nhau rất gần nên trình duyệt gửi hai hình ảnh đồng thời.
+\end{itemize}
+
+\subsection{Locate the HTTP response message containing the content of the initial HTML page (HTTP-wireshark-file4.html). What is the status code and status phrase provided by the server?}
+
+\begin{itemize}
+    \item[-] Để xác định gói HTTP Response chứa nội dung của trang HTML, tại ô Display Filter của Wireshark, nhập: 
+    \begin{lstlisting}
+http.request.uri contains "HTTP-wireshark-file4.html"\end{lstlisting}
+    \item[-] Trong Packet List, tìm gói có Info: \texttt{HTTP/1.1 200 OK} (đây là HTTP Response message từ server trả về nội dung HTML).
+    \item[-] Nhấp vào gói HTTP Response đã chọn để mở mục Packet Details $\rightarrow$ \texttt{Hypertext Transfer Protocol}.
+    \begin{itemize}
+        \item[$\bullet$] \texttt{Status Code: 200}
+        \item[$\bullet$] \texttt{Status Phrase: OK}
+    \end{itemize}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/1-cau3.png}
+        \caption{Status code và status phase của gói HTTP}
+    \end{figure}
+\end{itemize}
+
+\subsection{Based on your answer to Question 1, how many distinct TCP connections were established to fetch the HTML file and the two embedded images? Provide evidence by listing the unique Stream Index Numbers (e.g., tcp.stream eq X) that were used for these three objects}
+
+\begin{itemize}
+    \item[-] Tại ô Display Filter của Wireshark, nhập: 
+    \begin{lstlisting}
+http.request.method == "GET"\end{lstlisting}
+    \item[-] Xác định TCP Stream cho file HTML:
+    \begin{itemize}
+        \item[$\bullet$] Trong Packet List, tìm gói HTTP GET của file HTML.
+        \item[$\bullet$] Nhấp vào gói HTTP Response đã chọn để mở mục Packet Details $\rightarrow$ \texttt{Hypertext Transfer Protocol}.
+        \item[$\bullet$] Tìm mục Stream index để xác định TCP Stream của file HTML: \texttt{tcp.stream eq 4}.
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.8\textwidth]{img/1-cau4-1.png}
+            \caption{TCP Stream cho file HTML}
+        \end{figure}
+    \end{itemize}
+    \item[-] Xác định TCP Stream cho 2 file ảnh:
+    \begin{itemize}
+        \item[$\bullet$] Trong Packet List, tìm gói HTTP GET của hai file hình ảnh.
+        \item[$\bullet$] Nhấp vào gói HTTP Response đã chọn để mở mục Packet Details $\rightarrow$ \texttt{Hypertext Transfer Protocol}.
+        \item[$\bullet$] Tìm mục Stream index để xác định TCP Stream của 2 file hình ảnh:
+        \begin{itemize}
+            \item[$\circ$] pearson.png: \texttt{tcp.stream eq 4}
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{img/1-cau4-2.png}
+                \caption{TCP Stream cho file pearson.png}
+            \end{figure}
+            \item[$\circ$] 8E\_cover\_small.jpg: \texttt{tcp.stream eq 6}
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{img/1-cau4-3.png}
+                \caption{TCP Stream cho file 8E\_cover\_small.jpg}
+            \end{figure}
+        \end{itemize}
+    \end{itemize}
+    \item[-] Vậy có 2 kết nối TCP riêng biệt được thiết lập:
+    \begin{itemize}
+        \item[$\bullet$] \texttt{tcp.stream eq 4} (file HTML và file pearson.png)
+        \item[$\bullet$] \texttt{tcp.stream eq 6} (file 8E\_cover\_small.jpg)
+    \end{itemize}
+\end{itemize}
+
+\subsection{For the TCP connection that retrieved the initial HTML file, identify the three packets that form the TCP Three-Way Handshake. List the TCP flags set in each of these three packets in order}
+
+\begin{itemize}
+    \item[-] Lọc các gói TCP của kết nối HTML bằng Stream Index: 4.
+    \item[-] Trong mục Packet List, xác định 3 gói đầu tiên của kết nối TCP, đó chính là 3 gói tin tạo thành TCP Three-Way Handshake cần tìm:
+    
+    \begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \multicolumn{1}{|c|}{\textbf{STT}} & \multicolumn{1}{c|}{\textbf{Dòng}} & \multicolumn{1}{c|}{\textbf{Source}} & \multicolumn{1}{c|}{\textbf{Destination}} & \multicolumn{1}{c|}{\textbf{Source $\rightarrow$ Destination}} & \multicolumn{1}{c|}{\textbf{TCP Flags}} \\
+    \hline
+    Gói 1 & 146 & 10.0.231.26 & 128.119.245.12 & Client $\rightarrow$ Server & SYN \\
+    \hline
+    Gói 2 & 150 & 128.119.245.12 & 10.0.231.26 & Server $\rightarrow$ Client & SYN, ACK \\
+    \hline
+    Gói 3 & 152 & 10.0.231.26 & 128.119.245.12 & Client $\rightarrow$ Server & ACK \\
+    \hline
+    \end{tabular}
+    \end{table}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/1-cau5.png}
+        \caption{TCP Three-Way Handshake cho kết nối TCP của file HTML}
+    \end{figure}
+
+\end{itemize}
+
+\subsection{Select the largest data transfer packet (a packet with the PSH or ACK flag set and a large length) during the download of one of the image files. Examine the TCP Window Size Value in the packet details. What does this value represent, and why is it essential for the Transport Layer?}
+
+\begin{itemize}
+    \item[-] Xét file ảnh \texttt{8E\_cover\_small.jpg} với Stream index = 6.
+    \item[-] Tại ô Display Filter của Wireshark, nhập:
+    \begin{lstlisting}
+tcp.stream == 6\end{lstlisting}
+    \item[-] Nhấp vào "Length" để sắp xếp theo thứ tự giảm dần, kiểm tra TCP Flags của gói có TCP Segment Len lớn nhất nếu thõa đề thì đó là gói cần tìm.
+    \begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \multicolumn{1}{|c|}{\textbf{STT}} & \multicolumn{1}{c|}{\textbf{Dòng}} & \multicolumn{1}{c|}{\textbf{Source}} & \multicolumn{1}{c|}{\textbf{Destination}} & \multicolumn{1}{c|}{\textbf{TCP Segment Len}} & \multicolumn{1}{c|}{\textbf{TCP Flags}} \\
+    \hline
+    1 & 513 & 2.56.99.24 & 10.0.231.26 & 20160 & PHS, ACK \\
+    \hline
+    \end{tabular}
+    \end{table}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/1-cau6-1.png}
+        \caption{TCP Flags của gói tin có TCP Segment Len lớn nhất}
+    \end{figure}
+    \item[-] Click vào gói để mở mục Packet Details $\rightarrow$ \texttt{Transmission Control Protocol}
+    \item[-] Tìm mục Window để xác định TCP Window Size Value.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/1-cau6-2.png}
+        \caption{TCP Window Size Value}
+    \end{figure}
+    \item[-] TCP Window Size value: 21 bytes.
+    \begin{itemize}
+        \item[$\bullet$] TCP Window Size value đại diện cho dung lượng bộ đệm (buffer) sẵn có của bên nhận đã dành ra và sẵn sàng chấp nhận từ bên gửi tại thời điểm đó.
+        \item[$\bullet$] Thông báo cho bên nhận rằng tại thời điểm này bên nhận có sẳn 21 bytes bộ đệm trống để chứa dữ liệu.
+        \item[$\bullet$] Trong các mạng hiện đại, TCP Window Size value là giá trị cơ sở được sử dụng để tính toán kích thước cửa sổ thực tế. Nếu \texttt{Window Scaling} được kích hoạt, giá trị này sẽ được nhân với một hệ số mở rộng để tạo ra \texttt{Calculated window size}.
+    \end{itemize} 
+    \item[-] Tầm quan trọng đối với Tầng Vận Chuyển:
+    \begin{itemize}
+        \item[$\bullet$] Ngăn chặn Tràn Bộ đệm: Giá trị này ngăn bên gửi truyền dữ liệu vượt quá khả năng xử lý của bên nhận. Nếu không có cơ chế này, bộ đệm của bên nhận sẽ bị tràn, dẫn đến mất gói tin và phải truyền lại, gây giảm hiệu suất mạng nghiêm trọng.
+        \item[$\bullet$] Tính toán Cửa sổ Thực tế: Trong mạng hiện đại, giá trị này được nhân với một Hệ số Mở rộng (Window Scale Factor) để tạo ra \texttt{Calculated window size}.
+        \item[$\bullet$] \texttt{Window size value} là giá trị duy nhất trong TCP Header cho phép bên nhận điều khiển trực tiếp tốc độ truyền dữ liệu của bên gửi, một trách nhiệm không thể thiếu của Tầng Vận chuyển.
+    \end{itemize}
+\end{itemize}

@@ -1,0 +1,146 @@
+\section{Part 3: Network and Link Layer Analysis (3 pt)}
+
+\subsection{Source/Destination IP: Locate the DNS Query packet sent from your host to the Google DNS server}
+
+\begin{itemize}
+    \item[-] Để tìm vị trí truy vấn gói tin DNS được gửi từ máy chủ đến máy chủ DNS của server, ta lọc các ip của máy chủ DNS của Google (8.8.8.8), tại ô Display filter của Wireshark, nhập: 
+    \begin{lstlisting}
+dns and ip.addr == 8.8.8.8\end{lstlisting}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/3-cau1-1.png}
+        \caption{Lọc gói tin DNS với ip của Google DNS server}
+    \end{figure}
+    \item[-] Sau khi lọc ta có thể dễ dàng nhìn thấy tương tác giữa máy chủ với máy chủ DNS của Google. Qua hình trên ta biết: 
+\end{itemize}
+
+\subsubsection{What is the Source IP Address?}
+
+\begin{itemize}
+    \item[-] Địa chỉ IP nguồn (Host):  192.168.100.59
+\end{itemize}
+
+\subsubsection{What is the Destination IP Address?}
+
+\begin{itemize}
+    \item[-] Địa chỉ IP đích (Google DNS)  : 8.8.8.8
+\end{itemize}
+
+\subsubsection{Explain why these Source and Destination IP addresses will remain unchanged as the packet travels across the internet to the Google DNS server.}
+
+\begin{itemize}
+    \item[-] Các router mạng sử dụng đỉa chỉ IP đích để đưa ra quyết định định tuyến. Nếu một router thay đổi địa chỉ IP nguồn hoặc đích thì nó sẽ phá vỡ tính toàn vẹn (End-to-end Integrity). Nghĩa là, Khi địa chỉ IP đích bị thay đổi trong lúc truyền, gói tin sẽ không bao giờ đến được đích thực sự của nó. Và ngược lại, khi địa chỉ nguồn bị thay đổi, máy chủ sẽ gửi trả lời đến một địa chỉ sai. 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{img/3-cau1-2.png}
+        \caption{Tính toàn vẹn end-to-end của địa chỉ IP}
+    \end{figure}
+\end{itemize}
+
+\subsection{Find the Time to Live (TTL) field in the IP header of the DNS Query. What does the initial value of the TTL represent, and how does your local router/gateway modify this value when forwarding the packet?}
+
+\subsubsection{Find the Time to Live (TTL) field in the IP header of the DNS Query.}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/3-cau2.png}
+    \caption{TTL Field in IP Header of DNS Query}
+\end{figure}
+
+\begin{itemize}
+    \item[-] Time to Live (TTL): 128
+\end{itemize}
+
+\subsubsection{Giá trị TTL ban đầu đại diện cho điều gì?}
+
+\begin{itemize}
+    \item[-] Giá trị TTL ban đầu (initial TTL) đại diện cho số lượng bước nhảy (hops) tối đa mà gói tin được phép đi qua các router trên mạng trước khi nó bị hủy. Nó ngăn các gói tin vào vòng lặp (packet loop) vô tận tại tầng mạng. Thông thường, TTL mặc định cho Windows là 128, đối với Linux và macOS là 64.
+\end{itemize}
+
+\subsubsection{Router điều chỉnh TTL như nào}
+
+\begin{itemize}
+    \item[-] Nếu có packet loop trong mạng, khi nó chạm vào cổng định tuyến (routing interface) giá trị của TTL giảm đi 1 và cuối cùng vòng lặp này bị huỷ khi TTL giảm về còn 0 và trả về thông báo ICMP loại 11 và mã 0 (quá thời gian).
+\end{itemize}
+
+\subsection{Find the MAC Address of your local router/gateway (either by using arp -a in the command prompt or by finding the MAC address associated with the Gateway IP in your capture)}
+
+\begin{itemize}
+    \item[-] Địa chỉ MAC của router/gateway : 54-04-63-2f-d7-6c
+    \item[-] Địa chỉ MAC hiện thị qua Wireshark:
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{img/3-cau3-1.png}
+        \caption{Địa chỉ MAC trong Ethernet Header của DNS Query}
+    \end{figure}
+    \item[-] Tìm địa chỉ MAC hiện thị qua command prompt: ( địa chỉ IP đầu tiên trong bảng)
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{img/3-cau3-2.png}
+        \caption{Địa chỉ MAC trong Command Prompt}
+    \end{figure}
+\end{itemize}
+
+\subsection{What are the Source and Destination addresses in the Link Layer header (Ethernet or 802.11)? How are these addresses fundamentally different from the IP addresses you found?}
+
+\subsubsection{What are the Source and Destination addresses in the Link Layer header (Ethernet or 802.11)?}
+
+
+\begin{itemize}
+    \item[-] Địa chỉ của nguồn và đích trong tiêu đề của tầng Link được hiển thị dưới dạng địa chỉ MAC:
+    \begin{itemize}
+        \item[$\bullet$] Địa chỉ nguồn: 48:e7:da:a9:98:3b
+        \item[$\bullet$] Địa chỉ đích: 54:04:63:2f:d7:6c
+    \end{itemize}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/3-cau4.png}
+        \caption{Source and Destination MAC Address in Link Layer Header}
+    \end{figure}
+\end{itemize}
+
+\subsubsection{How are these addresses fundamentally different from the IP addresses you found?}
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{8cm}|p{7cm}|}
+        \hline
+        \multicolumn{1}{|c|}{\textbf{Đặc điểm}} & \multicolumn{1}{c|}{\textbf{Địa chỉ MAC}} & \multicolumn{1}{c|}{\textbf{Địa chỉ IP}} \\
+        \hline
+        Tầng mạng & Tầng 2 - Data Link (OSI) & Tầng Network (TCP/IP) \\
+        \hline
+        Tính chất & Được mã hoá cứng vào card mạng & Được gán động hoặc tĩnh thông qua cấu hình phần mềm. \\
+        \hline
+        Phạm vi sử dụng & Dùng để truyền dữ liệu giữa các thiết bị kết nối trên cùng một mạng LAN (hop-by-hop) & Dùng để định tuyến gói tin qua Internet từ nguồn đến đích (end-to-end) \\
+        \hline
+        Tính ổn định & MAC nguồn và đích bị thay thế tại mỗi router & IP nguồn và IP đích giữ nguyên từ thiết bị gửi đến thiết bị nhận \\
+        \hline
+        Định dạng & 48 bit (6 octet) & IPv4 32 bit hoặc IPv6 128 bit \\
+        \hline
+    \end{tabular}
+    \caption{So sánh địa chỉ MAC và địa chỉ IP}
+    \label{tab:mac-vs-ip}
+\end{table}
+
+\subsection{Examine the Link Layer header (Ethernet II or similar). What is the Type field's value, and what does it tell the receiving device (your router/gateway) about the protocol that follows?}
+
+\subsubsection{What is the Type field's value}
+
+\begin{itemize}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/3-cau5.png}
+        \caption{Trường Type trong Link Layer Header}
+    \end{figure}
+    \item[-] Giá trị của trường Type là: 0x0800
+\end{itemize}
+
+\subsubsection{What does it tell the receiving device (your router/gateway) about the protocol that follows}
+
+\begin{itemize}
+    \item[-] Quyết định giao thức cho tầng trên : Trường Type cho Router biết loại giao thức nào được đóng gói bên trong phần Dữ liệu (Payload) của khung Ethernet.
+    \item[-] Là điểm kết nối giữa \textbf{Layer 2} và \textbf{Layer 3} trong mô hình TCP/IP: Sau khi một thiết bị (như router) xử lý xong tiêu đề Tầng 2 (Địa chỉ MAC), nó cần biết giao thức Tầng 3 nào được đóng gói bên trong. Trường type cung cấp thông tin cho việc này.
+    \item[-] Cho router/gateway biết cách xử lý gói tin: Giá trị 16-bit trong trường Type cho thiết bị nhận biết giao thức tầng trên đang được sử dụng là gì.
+\end{itemize}
+

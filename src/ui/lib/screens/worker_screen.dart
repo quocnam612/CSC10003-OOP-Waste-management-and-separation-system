@@ -279,6 +279,7 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
       
       userName: _workerName,
       userRole: _workerRole,
+      authToken: widget.authToken,
       menuItems: _workerMenu,
       
       onDrawerItemSelected: _handleDrawerItem,

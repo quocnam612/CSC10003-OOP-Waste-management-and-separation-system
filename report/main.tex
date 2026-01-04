@@ -1,0 +1,63 @@
+\documentclass[12pt]{article}
+
+\usepackage{hcmus-report-template}
+
+% Disable indentation on new paragraphs
+\setlength{\parindent}{0pt}
+
+% Line spacing 1.5
+\renewcommand{\baselinestretch}{1.5}
+
+% Optional: graphic path
+% \graphicspath{PATH_TO_GRAPHIC_FOLDER}
+
+% To use Times font family, uncomment this row
+% \usepackage{mathptmx}
+
+% To use roman section / subsection, uncomment these rows
+% \renewcommand{\thesection}{\Roman{section}}
+% \renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
+
+% Define course name, report name and report title.
+\newcommand{\coursename}{Mạng máy tính}
+\newcommand{\reportname}{Network Packet Analysis with Wireshark}
+\newcommand{\reporttitle}{Network Packet Analysis with Wireshark}
+
+\newcommand{\studentname}{Nguyễn Quốc Nam - 24120098 \\ Võ Hoàng Phúc - 24120123 \\ Chế Nguyễn Thùy Trang - 24120469}
+\newcommand{\teachername}{ThS. Chung Thuỳ Linh}
+
+% Header
+\lhead{\reporttitle}
+\rhead{
+Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
+\coursename
+}
+
+% Footer
+% Customize the footer text if desired. Leaving it empty hides the footer.
+\newcommand{\leftfooter}{}
+\lfoot{\leftfooter}
+
+% ============ DOCUMENT ============
+\begin{document}
+
+\pagenumbering{roman}
+\input{content/title.tex}
+
+\input{content/member.tex}
+\pagebreak
+\tableofcontents
+\pagebreak
+\listoftables
+\pagebreak
+\listoffigures
+\pagebreak
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{content/I-Part1}
+\input{content/II-Part2}
+\input{content/III-Part3}
+
+\end{document}
