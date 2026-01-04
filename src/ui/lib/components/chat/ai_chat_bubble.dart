@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:ui/services/ai_assistant_api.dart';
 
 class AiChatBubble extends StatefulWidget {
@@ -84,15 +85,11 @@ class _AiChatBubbleState extends State<AiChatBubble> {
       );
 
       final responseText = payload['response'] as String? ?? 'AI chưa phản hồi.';
-      final model = payload['model'] as String?;
-      final formatted = (model != null && model.isNotEmpty)
-          ? '$responseText\n\n(Mô hình: $model)'
-          : responseText;
 
       if (!mounted) return;
       setState(() {
         _messages[pendingIndex] =
-            _ChatMessage(text: formatted.trim(), isUser: false);
+            _ChatMessage(text: responseText.trim(), isUser: false);
       });
     } catch (error) {
       if (!mounted) return;
@@ -280,15 +277,54 @@ class _ChatWindow extends StatelessWidget {
                                 ),
                               ),
                             Flexible(
-                              child: Text(
-                                message.text,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontStyle:
-                                      isPending ? FontStyle.italic : FontStyle.normal,
-                                ),
-                              ),
+                              child: isUser || isError || isPending
+                                  ? Text(
+                                      message.text,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: 14,
+                                        fontStyle: isPending
+                                            ? FontStyle.italic
+                                            : FontStyle.normal,
+                                      ),
+                                    )
+                                  : MarkdownBody(
+                                      data: message.text,
+                                      shrinkWrap: true,
+                                      styleSheet: MarkdownStyleSheet.fromTheme(
+                                        Theme.of(context),
+                                      ).copyWith(
+                                        p: TextStyle(
+                                          color: textColor,
+                                          fontSize: 14,
+                                          height: 1.35,
+                                        ),
+                                        strong: TextStyle(
+                                          color: textColor,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        em: TextStyle(
+                                          color: textColor,
+                                          fontSize: 14,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        listBullet: TextStyle(
+                                          color: textColor,
+                                          fontSize: 14,
+                                        ),
+                                        h1: TextStyle(
+                                          color: textColor,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        h2: TextStyle(
+                                          color: textColor,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
