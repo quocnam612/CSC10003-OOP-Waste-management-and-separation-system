@@ -558,6 +558,7 @@ class _ManagerDashboardState extends State<ManagerDashboard> {
       // Dữ liệu truyền vào Layout
       userName: _managerName,
       userRole: _managerRole,
+      authToken: widget.authToken,
       menuItems: _managerMenu,
       
       // Hàm callback

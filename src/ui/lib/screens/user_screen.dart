@@ -131,6 +131,7 @@ class _ResidentDashboardState extends State<ResidentDashboard> {
       
       userName: _userName,
       userRole: _userRole,
+      authToken: widget.authToken,
       menuItems: _residentMenu,
       
       onDrawerItemSelected: _handleDrawerItem,

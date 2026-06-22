@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ui/components/chat/ai_chat_bubble.dart';
 import 'package:ui/components/model/menu_item_model.dart';
 
 // 1. [QUAN TRỌNG] Widget hiển thị nội dung mặc định (Trang chủ)
@@ -157,6 +158,7 @@ class DashboardLayout extends StatelessWidget {
   
   final String userName;
   final String userRole;
+  final String authToken;
 
   const DashboardLayout({
     super.key,
@@ -167,6 +169,7 @@ class DashboardLayout extends StatelessWidget {
     required this.onProfileSelected,
     required this.userName,
     required this.userRole,
+    required this.authToken,
     this.appName = 'Green Route',
   });
 
@@ -202,7 +205,12 @@ class DashboardLayout extends StatelessWidget {
         drawerHeaderTitle: appName,
       ),
       
-      body: body,
+      body: Stack(
+        children: [
+          Positioned.fill(child: body),
+          AiChatBubble(authToken: authToken),
+        ],
+      ),
     );
   }
 }

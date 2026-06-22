@@ -1,68 +1,115 @@
-# CSC10003-OOP-Waste-management-and-separation-system
+# Thông tin sinh viên
 
-## Requirement
+MSSV: **24120098**
+Họ và tên: *Nguyễn Quốc Nam*
 
-* C++23
-* Docker
-* CMake
-* Flutter
+# Ollama Server
 
-## Download ONLY the app
+#### Cài đặt Ollama
 
-find it at Release section
-
-## Run the app WITHOUT API server
-
-I've already host it on render at csc10003-oop-waste-management-and.onrender.com
-You can check with csc10003-oop-waste-management-and.onrender.com/health
-
-```
-  cd src/ui
-  flutter run --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
+```Bash
+curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-or build it into an actual program with:
+#### Cài đặt model (Gemma 3)
 
-* Linux:
+```Bash
+ollama run gemma3:1b
+```
 
-  ```
-  cd src/ui
-  flutter build linux --release --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
-  ```
-* Windows:
+**Build & run:** 
 
-  ```
-  cd src/ui
-  flutter build windows --release --dart-define=API_URL=https://csc10003-oop-waste-management-and.onrender.com
-  ```
+```bash
+ollama serve
+```
 
-## Run & Build API Server
 
-The server will be at  `http://localhost:5000/`
+```bash
+cd src/ai
+ollama rm greenroute-helper
+ollama create greenroute-helper -f Modelfile
+```
 
-* Docker: just run it
+# Backend Server
 
-  ```
-  docker run --rm -p 5000:5000 green_route
-  ```
-* Cmake: need to install these requirement goodluck (mongocxx, OPENSSL, asio)
+#### Cách 1: Dùng Docker
 
-  ```
-  cmake --build build
-  ```
-* Run
+**Requirement:** Docker
 
-  ```
-  ./out/greenroute
-  ```
+**Build & run:** 
 
-## Run & Debug Frontend
+- Linux
 
-You can either go to `src/ui/lib/main.dart` and choose Run/Debug or:
+```bash
+docker build -t green-route .
+docker run --rm -p 5000:5000 green_route
+```
 
-* Run
+- Windows
 
-  ```
-  cd src/ui
-  flutter run
-  ```
+  - Bật backend WSL hoặc Hyper-V trong Docker Desktop.
+
+```powershell
+docker build -t green-route .
+docker run --rm -p 5000:5000 green_route
+```
+
+#### Cách 2: Dùng CMake
+
+**Requirement:**
+
+- C++23
+- CMake
+- Asio C++ Library
+- Mongocxx (Mongodb c++ driver)
+- OpenSSL Library
+
+**Build & run:** 
+
+- Linux
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/green_route
+```
+
+- Windows
+
+  - Cài Visual Studio (MSVC) + CMake và các thư viện mongocxx/bsoncxx, OpenSSL, Asio bản Windows rồi thêm vào `CMAKE_PREFIX_PATH`.
+
+```powershell
+cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release ^
+      -DCMAKE_PREFIX_PATH="C:/mongo-cxx-driver;C:/OpenSSL-Win64"
+cmake --build build --config Release
+.\build\Release\green_route.exe
+```
+
+# App
+
+**Requirement:** Flutter SDK
+
+#### Cách 1: Chạy trên Flutter
+
+```bash
+cd src/ui
+flutter run
+```
+
+#### Cách 2: Build thành app
+
+- Linux: 
+  - App tại src/ui/build/linux/x64/release/bundle/ui
+
+```bash
+cd src/ui
+flutter build linux --release
+```
+
+- Windows: 
+  - App tại src/ui/build/windows/x64/runner/Release/greenroute.exe
+
+```bash
+cd src/ui
+flutter build windows --release
+```
